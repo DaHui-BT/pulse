@@ -1,0 +1,20 @@
+
+.article-detail .article-detail-container .ant-page-header-heading-left {
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.article-detail .article-detail-container .ant-page-header-heading {
+  flex-wrap: wrap;
+}
+
+.article-detail .article-detail-container .ant-page-header-heading-title {
+  white-space: inherit;
+  text-overflow: inherit;
+}
+/* 
+.article-detail .article-detail-container .ant-breadcrumb-link span {
+  text-overflow: ellipsis;
+  text-overflow: ellipsis;
+} */
+

@@ -1,0 +1,15 @@
+@import url('./icons/icons.css');
+@import url('./styles/color.css');
+@import url('./styles/constant.css');
+@import url('./styles/github_theme_reset.css');
+@import url('./styles/ant_design_custom.css');
+
+
+:where(.css-dev-only-do-not-override-17yhhjv).ant-comment .ant-comment-nested {
+  margin-left: var(--middle-margin);
+}
+
+:where(.css-dev-only-do-not-override-17yhhjv).ant-comment .ant-comment-inner {
+  padding: 0;
+  padding-top: 20px;
+}

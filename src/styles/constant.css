@@ -1,0 +1,21 @@
+:root {
+  --navbar-height: 50px;
+  --content-max-width: 900px;
+  --content-min-width: 350px;
+  --content-padding: 30px;
+
+  --small-padding: 10px;
+  --middle-padding: 20px;
+  --large-padding: 50px;
+
+  --small-margin: 10px;
+  --middle-margin: 20px;
+  --large-margin: 50px;
+
+  --small-border: 3px;
+  --middle-border: 5px;
+  --large-border: 10px;
+
+  --basic-box--shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
+  --light-box--shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
