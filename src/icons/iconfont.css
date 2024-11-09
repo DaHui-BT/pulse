@@ -1,0 +1,175 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4716779 */
+  src: url('iconfont.woff2?t=1731164242239') format('woff2'),
+       url('iconfont.woff?t=1731164242239') format('woff'),
+       url('iconfont.ttf?t=1731164242239') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-custom-user:before {
+  content: "\e632";
+}
+
+.icon-3701mima:before {
+  content: "\e66b";
+}
+
+.icon-password:before {
+  content: "\e61d";
+}
+
+.icon-user:before {
+  content: "\e6bc";
+}
+
+.icon-password1:before {
+  content: "\e61b";
+}
+
+.icon-password2:before {
+  content: "\e82b";
+}
+
+.icon-user1:before {
+  content: "\e621";
+}
+
+.icon-password3:before {
+  content: "\e736";
+}
+
+.icon-user2:before {
+  content: "\e610";
+}
+
+.icon-user3:before {
+  content: "\e682";
+}
+
+.icon-user4:before {
+  content: "\e62a";
+}
+
+.icon-email:before {
+  content: "\e675";
+}
+
+.icon-email1:before {
+  content: "\e66f";
+}
+
+.icon-email2:before {
+  content: "\e856";
+}
+
+.icon-zhuanfa:before {
+  content: "\e63b";
+}
+
+.icon-zhuanfa1:before {
+  content: "\e67f";
+}
+
+.icon-zhuanfa2:before {
+  content: "\e63d";
+}
+
+.icon-collect2:before {
+  content: "\e604";
+}
+
+.icon-like:before {
+  content: "\e69e";
+}
+
+.icon-like1:before {
+  content: "\e7c8";
+}
+
+.icon-star:before {
+  content: "\e7df";
+}
+
+.icon-collection:before {
+  content: "\e6ea";
+}
+
+.icon-Star:before {
+  content: "\e646";
+}
+
+.icon-star1:before {
+  content: "\e602";
+}
+
+.icon-Like:before {
+  content: "\e63f";
+}
+
+.icon-menu:before {
+  content: "\e7f4";
+}
+
+.icon-menu1:before {
+  content: "\e638";
+}
+
+.icon-Menu:before {
+  content: "\e64f";
+}
+
+.icon-time:before {
+  content: "\e69d";
+}
+
+.icon-date:before {
+  content: "\e697";
+}
+
+.icon-update:before {
+  content: "\ed7d";
+}
+
+.icon-update1:before {
+  content: "\e63c";
+}
+
+.icon-update2:before {
+  content: "\e968";
+}
+
+.icon-aui-icon-date:before {
+  content: "\e609";
+}
+
+.icon-update3:before {
+  content: "\e642";
+}
+
+.icon-update4:before {
+  content: "\e8b8";
+}
+
+.icon-Update:before {
+  content: "\e643";
+}
+
+.icon-pulse:before {
+  content: "\e70f";
+}
+
+.icon-bx-pulse:before {
+  content: "\e666";
+}
+
+.icon-pulse1:before {
+  content: "\ecd4";
+}
+
