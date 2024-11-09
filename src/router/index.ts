@@ -3,7 +3,6 @@ import type { RouteRecordRaw } from 'vue-router'
 import { JUMP_DELAY } from '../constant'
 import { AuthorizationService } from '../services/AuthorizationService'
 
-import HomeView from '../pages/Home.vue'
 import { message } from 'ant-design-vue'
 
 const routes: Readonly<RouteRecordRaw[]> = [
@@ -13,7 +12,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/home',
     name: 'Home',
-    component: HomeView,
+    component: () => import('../pages/Home.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: true,
