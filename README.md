@@ -1,39 +1,79 @@
-# Vue Front-End Only Project with Markdown Editor, Image Display, and Dynamic Routing
+# Pulse — Front-End Blog Application
 
-This project is a front-end-only application built with Vue 3 and Vite, designed as a blogging platform. It includes features like Markdown file uploads, image display via dynamic URLs, and interactive components using Vue Router and Ant Design Vue.
-
-## Table of Contents
-
-- [Features](#features)
-- [Technologies](#technologies)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Markdown Editor](#markdown-editor)
-  - [Image Display](#image-display)
-- [Project Structure](#project-structure)
-- [Future Improvements](#future-improvements)
+This is a front-end-only blog application that allows users to create, view, and manage blog articles written in Markdown format. It integrates various features like dynamic image uploads, Vue.js routing, and real-time updates for users.
 
 ## Features
 
-- **Markdown Editing and Previewing**: Users can upload and edit Markdown files, with real-time previews of the content using `v-md-editor`.
-- **Dynamic Routing and Image Display**: Enables viewing of dynamic content and images through URL parameters.
-- **Component-Based Design**: Uses Vue Router, with custom components for reusability and scalability.
-- **Alerts and Notifications**: Centralized user notifications for actions like successful uploads, errors, etc.
+- **Markdown-based Blog**: Write and display blog articles using Markdown syntax.
+- **Image Upload**: Upload images directly to the MongoDB database.
+- **Dynamic Routing**: Vue Router is used for navigating between different blog articles and other pages.
+- **User Authentication**: The system uses email/password authentication to manage user sessions.
+- **Interactive UI**: A clean, user-friendly interface with Ant Design Vue components.
+- **Responsive**: Fully responsive design for both desktop and mobile users.
 
-## Technologies
+## Technologies Used
 
-- **Vue 3**: Core framework for building reactive UI components.
-- **Vite**: Fast development environment for Vue 3.
-- **Vue Router**: Enables client-side routing, including dynamic routing for displaying images and Markdown content.
-- **Ant Design Vue**: UI library for styled components and interactive elements.
-- **v-md-editor**: Markdown editor with preview capabilities.
-- **Realm Web SDK (MongoDB Atlas)**: Used for database interactions, authentication, and data fetching without a backend server.
+- **Vue.js**: The core JavaScript framework used to build the application.
+- **Vue Router**: For handling dynamic routes and navigation.
+- **v-md-editor**: A Markdown editor for writing and rendering blog content.
+- **MongoDB Atlas**: The backend database used to store articles, user information, and uploaded images.
+- **Ant Design Vue**: A UI component library used for building the user interface.
+- **Realm Web SDK**: Used for connecting to MongoDB Atlas, handling user authentication, and making API calls.
+- **Axios**: For making HTTP requests, such as uploading files and interacting with the API.
+- **CSS3 & SCSS**: For styling the application.
 
 ## Installation
 
-1. **Clone the repository**:
+### Prerequisites
+
+Make sure you have the following installed:
+
+- **Node.js** (version >= 14.x)
+- **npm**
+
+### Steps to Run the Project Locally
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/dahui-bt/pulse.git
+    cd pulse
+    ```
+
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3. Change your own database
+    ```ts
+    // in your service directory change the following code to your configuration
+    const config = {
+      appId: 'xxx-appId',
+      cluster: 'xxx-cluster',
+      database: 'xxx-database',
+      collection: 'xxx-collection'
+    }
+    ```
+
+4. Run the development server:
+    ```bash
+    npm run dev
+    ```
+
+5. Open your browser and navigate to `http://localhost:5173` to see the application.
+
+## File Structure
 
 ```bash
-git clone https://github.com/DaHui-BT/pulse.git
-cd pulse
+├── public                 # Public assets
+├── src
+│   ├── assets             # Image and other static assets
+│   ├── components         # Reusable Vue components
+│   ├── services           # MongoDB Realm and utility services
+│   ├── pages              # Page components for routes
+│   ├── router             # Vue Router configuration
+│   ├── tools              # Utility functions (e.g., message utilities)
+│   ├── App.vue            # Root Vue component
+│   ├── main.ts            # Entry point for the Vue application
+└── README.md
 ```
