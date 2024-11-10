@@ -28,7 +28,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist  # The directory where Vue outputs build files
         publish_branch: gh-pages  # Branch to push the pages to
-        cname: ''  # Optional: specify custom domain if needed (leave empty for default)
         
     # - name: Deploy
     #   uses: JamesIves/github-pages-deploy-action@v4
