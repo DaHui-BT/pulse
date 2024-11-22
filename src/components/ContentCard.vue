@@ -1,8 +1,10 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import moment from 'moment'
 
 import { ArticleDocument } from '../entities/article'
+import { TagService } from '../api/TagService';
+
 
 const props = defineProps({
   content: {
@@ -10,7 +12,7 @@ const props = defineProps({
     required: true
   }
 })
-
+const tagService = TagService.getInstance()
 const loading = ref(props.content == null)
 
 const publishDate = computed(() => {
@@ -20,6 +22,18 @@ const publishDate = computed(() => {
 const updateDate = computed(() => {
   return moment(props.content.updatedAt).format('YYYY-MM-DD HH:mm')
 })
+
+onMounted(() => {
+  tagService.findAllTags().then(res => {
+    props.content.tagList = []
+    res.data?.forEach(tag => {
+      if (props.content.tags.includes(tag._id)) {
+        props.content.tagList?.push(tag)
+      }
+    })
+  })
+})
+
 </script>
 
 <template>
@@ -29,7 +43,7 @@ const updateDate = computed(() => {
         <a-typography-link class="title-ellipsis" :href="`#/article-detail?_id=${content._id}`" ellipsis :content="content.title"></a-typography-link>
 
         <div class="info-tag-container">
-          <a-tag :color="tag.color" v-for="tag in content.tags" :key="tag">{{ tag.name }}</a-tag>
+          <a-tag :color="tag.color" v-for="tag in content.tagList" :key="tag">{{ tag.name }}</a-tag>
         </div>
       </a-flex>
     </template>

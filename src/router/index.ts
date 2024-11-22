@@ -4,6 +4,7 @@ import { JUMP_DELAY } from '../constant'
 import { AuthorizationService } from '../services/AuthorizationService'
 
 import { message } from 'ant-design-vue'
+import { Store } from '../store'
 
 const routes: Readonly<RouteRecordRaw[]> = [
   {
@@ -110,7 +111,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     // judge is login or not
-    if (AuthorizationService.getInstance().isAuthenticated()) {
+    const store = Store()
+    if (!store.isTokenExpired) {
       next()
     } else {
       message.warning('Have not login, login first')

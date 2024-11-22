@@ -1,9 +1,6 @@
-import { ObjectId } from "../types/realm"
-
-
 type FileDocument = {
-  _id?: ObjectId,
-  creator: ObjectId,
+  _id?: string,
+  creator: string,
   filename: string,
   type: string,
   size: Number,

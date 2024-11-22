@@ -1,6 +1,3 @@
-import { ObjectId } from "../types/realm"
-
-
 enum OperationType {
   STAR = 'STAR',
   COLLECT = 'COLLECT',
@@ -16,10 +13,10 @@ enum CollectionType {
 }
 
 type InteractionDocument = {
-  _id?: ObjectId,
-  createdBy: ObjectId,
-  documentId: ObjectId,
-  collection: CollectionType,
+  _id?: string,
+  createdBy: string,
+  documentId: string,
+  collectionName: CollectionType,
   operation: OperationType,
   createdAt: Date,
   isDeleted: boolean

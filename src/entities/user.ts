@@ -1,28 +1,20 @@
-import { ObjectId } from "./base"
-
 enum UserGender {
   FEMALE = 'FEMALE',
   MALE = 'MALE'
 }
 
 interface UserDocument {
-  _id: ObjectId,
+  _id: string,
   username: string,        // unique
   email: string,           // unique
   password: string,        // hashed
-  avatar_url?: string,
-  avatar: {
-    filename: string,
-    type: string,
-    size: number,
-    data: Binary
-  },          // URL to avatar image
+  avatar?: string,
   gender: UserGender,
   description: string,
   birthday: Date,
   createdAt: Date,
   updatedAt: Date,
-  roles: ObjectId[],
+  roles: string[],
   isActive: boolean,
   profile: {
     firstName: string,
@@ -42,8 +34,8 @@ interface UserDocument {
       darkMode: boolean
     }
   },
-  subscribers: ObjectId[],  // References to User._id
-  subscribing: ObjectId[],  // References to User._id
+  subscribers: string[],  // References to User._id
+  subscribing: string[],  // References to User._id
   statistics: {
     articlesCount: number,
     commentsCount: number,

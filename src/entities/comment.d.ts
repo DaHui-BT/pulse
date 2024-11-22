@@ -1,15 +1,16 @@
 import { BaseDocument } from './base'
 
 type CommentDocument = {
-  _id?: ObjectId,
+  _id?: string,
   content: string,
-  author: {
-    userId: ObjectId,         // Reference to User._id
+  createdBy: string,
+  author?: {
+    userId: string,         // Reference to User._id
     username: string,
     avatar: string
   },
-  article: ObjectId,           // Reference to Article._id
-  parentComment: ObjectId,     // Reference to Comment._id (for nested comments)
+  article: string,           // Reference to Article._id
+  parentComment: string,     // Reference to Comment._id (for nested comments)
   like: number,
   dislike: number,
   createdAt: Date,
@@ -18,15 +19,15 @@ type CommentDocument = {
 }
 
 type CommentAggrateDocument = {
-  _id: ObjectId,
+  _id?: string,
   content: string,
-  author: {
-    userId: ObjectId,         // Reference to User._id
+  author?: {
+    userId: string,         // Reference to User._id
     username: string,
     avatar: string
   },
-  article: ObjectId,           // Reference to Article._id
-  parentComment: ObjectId,     // Reference to Comment._id (for nested comments)
+  article: string,           // Reference to Article._id
+  parentComment: string,     // Reference to Comment._id (for nested comments)
   like: number,
   dislike: number,
   children: CommentAggrateDocument[],

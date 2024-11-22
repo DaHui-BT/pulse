@@ -1,19 +1,18 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import moment from 'moment'
-import { InteractionService } from '../services/InteractionService'
+import { InteractionService } from '../api/InteractionService'
 import { InteractionDocument, OperationType } from '../entities/interaction'
-import { UserService } from '../services/UserService'
 import { ObjectId } from '../tools/database'
+import { Store } from '../store'
 
+const store = Store()
 const interaction_list = reactive<InteractionDocument[]>([])
 const interactionService = InteractionService.getInstance()
-const userService = UserService.getInstance()
 
 const initLoading = ref<boolean>(false)
-const showLoadingButton = ref<boolean>(true)
+const showLoadingButton = ref<boolean>(false)
 const current_page = ref<number>(0)
-const current_page_size = ref<number>(10)
 
 onMounted(() => {
   loadData(true)
@@ -21,7 +20,8 @@ onMounted(() => {
 
 function loadData(isClear: boolean = false) {
   initLoading.value = true
-  interactionService.findInteractions({createdBy: new ObjectId(userService.getCurrentUser()._id)}, {page: current_page.value, pageSize: current_page_size.value}).then(res => {
+  interactionService.findInteractions({createdBy: new ObjectId(store.user._id)}).then(res => {
+    console.log(res)
     isClear && interaction_list.splice(0, interaction_list.length)
     interaction_list.push(...(res.data?.interactions || []))
     initLoading.value = false
@@ -81,7 +81,7 @@ function operateType(operate: OperationType) {
             <a-typography-text type="secondary">{{ moment(interaction.createdAt).fromNow() }}</a-typography-text>
           </a-tooltip>
           <a-typography-text class="interaction-text">{{ interaction.operation }} - </a-typography-text>
-          <a-typography-link :href="`#/article-detail?_id=${interaction.documentId + ''}`">{{ interaction.collection }}</a-typography-link>
+          <a-typography-link :href="`#/article-detail?_id=${interaction.documentId + ''}`">{{ interaction.collectionName }}</a-typography-link>
           </a-timeline-item>
     </a-list>
   </a-timeline>

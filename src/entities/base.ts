@@ -1,8 +1,6 @@
-import { ObjectId } from "../types/realm"
-
 type BaseDocument = {
-  _id: ObjectId,
-  author?: ObjectId,
+  _id: string,
+  author?: string,
   updateAt: Date,
   createAt: Date
 }

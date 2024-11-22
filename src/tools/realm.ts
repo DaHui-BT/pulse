@@ -49,7 +49,7 @@ class Database {
     try {
       await this.app?.emailPasswordAuth.registerUser({ email, password })
     } catch (err: any) {
-      throw new Error('Register Error: ' + err.error)
+      throw new Error('Register Error: ' + err.message)
     }
   }
 

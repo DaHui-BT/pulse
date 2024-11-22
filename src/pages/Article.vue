@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { type ArticleDocument } from '../entities/article'
-import { ArticleService } from '../services/ArticleService'
+import { ArticleService } from '../api/ArticleService'
 
-import ContentCard from '@components/ContentCard.vue'
+import ContentCard from '../components/ContentCard.vue'
 import Constant from '../constant'
 import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
@@ -32,8 +32,13 @@ async function loadData(filter: Partial<ArticleDocument> = {}) {
 }
 
 onMounted(() => {
-  let search_value: string = route.query.search + ''
-  loadData({title: { $text: { $search: search_value } }})
+  if (route.query.search && route.query.search.length > 0) {
+    let search_value: string = route.query.search + ''
+    
+    loadData({title: search_value })
+  } else {
+    loadData()
+  }
 })
 
 function changePage(page_number: number) {

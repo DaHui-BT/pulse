@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 
 import router from './router'
 
@@ -53,6 +54,7 @@ VMdPreview.use(githubTheme, {
 
 
 createApp(App)
+  .use(createPinia())
   .use(router)
   .use(VueMarkdownEditor)
   .use(VMdPreview)

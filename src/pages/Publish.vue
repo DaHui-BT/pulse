@@ -3,18 +3,18 @@ import { reactive, computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { message, UploadChangeParam } from 'ant-design-vue'
 
-import { TagService } from '../services/TagService'
+import { TagService } from '../api/TagService'
 import { ArticleDocument, ArticleStatus } from '../entities/article'
-import { ArticleService } from '../services/ArticleService'
-import { UserService } from '../services/UserService'
-import { FileService } from '../services/FileService'
+import { ArticleService } from '../api/ArticleService'
+import { UserService } from '../api/UserService'
+import { FileService } from '../api/FileService'
 import { TagDocument } from '../entities/tag'
-import { ObjectId } from '../tools/database'
-import { FileDocument } from '../entities/file'
-import { fileToBinary } from '../tools/image_tools'
+import { Store } from '../store'
+import Loading from '../plugins/loading'
 
 
 const route = useRoute()
+const store = Store()
 const isEdit = ref<boolean>(false)
 const spinning = ref<boolean>(true)
 const articleService = ArticleService.getInstance()
@@ -25,7 +25,7 @@ const tag_list = reactive<TagDocument[]>([])
 const fileList = ref([])
 
 interface FormState {
-  _id?: ObjectId,
+  _id?: string,
   title: string
   tag_list: string[]
   description: string
@@ -41,7 +41,7 @@ const formState = reactive<FormState>({
   isPublic: false
 })
 const article = ref<ArticleDocument>({
-  createdBy: userService.getCurrentUser()._id,
+  createdBy: store.user._id,
   title: '',
   description: '',
   content: '',
@@ -60,6 +60,7 @@ const article = ref<ArticleDocument>({
 
 onMounted(() => {
   tagService.findAllTags().then(res => {
+    console.log(res)
     if (res.success) {
       tag_list.splice(0, tag_list.length)
       tag_list.push(...(res.data || []))
@@ -71,7 +72,7 @@ onMounted(() => {
 
   if (route.query._id != undefined && route.query._id != null) {
     isEdit.value = true
-    articleService.findArticleById((new ObjectId(route.query._id + ''))).then(res => {
+    articleService.findArticleById((route.query._id + '')).then(res => {
       if (res.success) {
         if (!res.data) {
           throw new Error('no such article')
@@ -101,35 +102,26 @@ const disabled = computed(() => {
 
 async function handleUploadImage(e: Event, insertImage: Function, files: File[]) {
   // TODO upload image file and get the image_id
+  Loading.show()
   const file = files[0]
-  const fileInfo: FileDocument = {
-    creator: userService.getCurrentUser()._id,
-    filename: file.name,
-    type: file.type,
-    size: file.size,
-    data: await fileToBinary(file),
-    createAt: new Date(),
-    expireAt: null,
-    description: '',
-    isDeleted: false
+  const uploadResponse = await fileService.uploadFile(file)
+  // TODO this method will occupy much storage
+  if (uploadResponse.success) {
+    formState.content += `![image](${uploadResponse.data?.fileUrl})`
+  } else {
+    message.error(uploadResponse.error)
   }
-  fileService.uploadFile(fileInfo).then(res => {
-    // formState.content += `![${res.data?.filename}](${location.href.split('#')[0]}#/image/${res.data?._id})`
-    // TODO this method will occupy much storage
-    if (res.success) {
-      formState.content += `![${res.data?.filename}](data:image/png;base64,${res.data?.data.buffer.toString('base64')})`
-    } else {
-      message.error(res.error)
-    }
-  })
+  Loading.hide()
+  
 }
 
 function onFinish(values: FormState) {
+  console.log(values)
   article.value.title = values.title
   article.value.description = values.description
   article.value.content = values.content
-  article.value.status = values.isPublic ? ArticleStatus.PUBLIC : ArticleStatus.PRIVATE
-  article.value.tags = tag_list.filter(tag => values.tag_list.includes(tag._id + ''))
+  article.value.status = values.isPublic ? 0 : 1
+  article.value.tags = values.tag_list
   if (isEdit.value) {
     if (!formState._id) {
       throw new Error('Article id error')
@@ -197,15 +189,7 @@ const handleChange = async (info: UploadChangeParam) => {
                   placeholder="select your tag"
                   style="min-width: 200px"></a-select>
             </a-form-item>
-
-            <!-- <a-form-item name="permission" :rules="[{ required: true, message: 'Please input your permission!' }]">
-              <a-select size="large"
-                      v-model="formState.status"
-                      :options="[{label: 'Private', value: ArticleStatus.PRIVATE},
-                                    {label: 'Public', value: ArticleStatus.PUBLIC}]"
-                      placeholder="permission"
-                      style="width: 150px"></a-select>
-            </a-form-item> -->
+            
             <a-form-item name="isPublic" :rules="[{ required: true, message: 'Please input your permission!' }]">
               <a-switch v-model:checked="formState.isPublic" checked-children="public" un-checked-children="private" />
             </a-form-item>

@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import moment from 'moment'
 
-import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from '@ant-design/icons-vue'
+// import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from '@ant-design/icons-vue'
 import { CommentAggrateDocument } from '../entities/comment'
 
 const emits = defineEmits(['replay'])
@@ -47,7 +47,7 @@ const fromNow = computed(() => {
 <template>
   <a-comment class="comment">
     <template #author>
-      <a :href="`#/user-info?use_id=${comment.author.userId}`">{{ comment.author.username }}</a>
+      <a :href="`#/user-info?use_id=${comment.author.userId}`">{{ comment?.author?.username }}</a>
     </template>
     <template #avatar>
       <a-avatar :src="comment.author?.avatar" :alt="comment.author.username" />

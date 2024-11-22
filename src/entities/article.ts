@@ -1,4 +1,3 @@
-import { ObjectId } from "./base"
 import { TagDocument } from "./tag"
 
 enum ArticleStatus {
@@ -7,13 +6,14 @@ enum ArticleStatus {
 }
 
 type ArticleDocument = {
-  _id?: ObjectId,
-  createdBy: ObjectId,         // Reference to User._id
+  _id?: string,
+  createdBy: string,         // Reference to User._id
   title: string,
   description: string,
   content: string,
-  status: ArticleStatus,
-  tags: TagDocument[],
+  status: number, // 0 indicate can be viewd, 1 indicate private, 2 indicate deleted
+  tags: string[],
+  tagList?: TagDocument[],
   createdAt?: Date,
   updatedAt?: Date,
   statistics: {

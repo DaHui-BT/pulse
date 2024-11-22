@@ -1,7 +1,5 @@
-import { ObjectId } from "../types/realm"
-
 type CityDocument = {
-  _id?: ObjectId,
+  _id?: string,
   province: String,
   city: String[]
 }

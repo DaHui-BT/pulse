@@ -3,29 +3,33 @@ import { ref, reactive, onBeforeMount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 
-import { ArticleService } from '../services/ArticleService'
-import { ObjectId } from '../tools/database'
-import { UserService } from '../services/UserService'
+import { ArticleService } from '../api/ArticleService'
+import { UserService } from '../api/UserService'
 import { ArticleDocument } from '../entities/article'
 import { UserDocument } from '../entities/user'
-import { InteractionService } from '../services/InteractionService'
+import { InteractionService } from '../api/InteractionService'
 import { OperationType, CollectionType } from '../entities/interaction'
-import { CommentService } from '../services/CommentService'
+import { CommentService } from '../api/CommentService'
 import { CommentDocument, CommentAggrateDocument } from '../entities/comment'
-import { getImageBase64 } from '../tools/image_tools'
 
 import Comment from '../components/Comment.vue'
+import { Store } from '../store'
+import { TagService } from '../api/TagService'
+import { TagDocument } from '../entities/tag'
 
 const route = useRoute()
 const router = useRouter()
+const store = Store()
 const comment_input = ref<HTMLElement>()
 const user_service = UserService.getInstance()
 const article_service = ArticleService.getInstance()
 const comment_service = CommentService.getInstance()
 const interaction_service = InteractionService.getInstance()
+const tagService = TagService.getInstance()
 const comment_aggrate_list = reactive<Array<CommentAggrateDocument>>([])
 const article_info = ref<ArticleDocument>()
 const user_info = ref<UserDocument>()
+const tag_list = reactive<TagDocument[]>([])
 let spinning = ref<boolean>(true)
 let comment_spinning = ref<boolean>(true)
 let function_spinning = ref<boolean>(true)
@@ -47,13 +51,13 @@ const routes = reactive<{path: string, breadcrumbName: string}[]>([
 
 const submitting = ref<boolean>(false)
 const value = ref<string>('')
-const comment_father_id = ref<ObjectId>(new ObjectId('000000000000000000000000'))
+const comment_father_id = ref<string | null>()
 const is_stared = ref<boolean>(false)
 const is_collected = ref<boolean>(false)
 const comment_placeholder = ref<string>('input your comment')
 
 onBeforeMount(async () => {
-  await article_service.findArticleById(new ObjectId(route.query._id + '')).then(res => {
+  await article_service.findArticleById(route.query._id + '').then(res => {
     if (res.success) {
       article_info.value = res.data || undefined
       routes[2].breadcrumbName = article_info.value?.title || ''
@@ -63,22 +67,29 @@ onBeforeMount(async () => {
       message.error(res.error)
       throw new Error(res.error)
     }
+  }).catch(err => {
+    throw new Error(err.message)
   })
+
+  article_info.value && tagService.findTagByIds(article_info.value.tags).then(res => {
+    if (res.success && res.data) {
+      tag_list.splice(0, tag_list.length)
+      tag_list.push(...res.data)
+    }
+  })
+  
   // TODO only show user part information
-  user_service.findUserById(article_info.value?.createdBy).then(res => {
+  article_info.value && user_service.findUserById(article_info.value?.createdBy).then(res => {
     if (res.success) {
       user_info.value = res.data
-      if (user_info.value && res.data) {
-        user_info.value.avatar_url = getImageBase64(res.data.avatar.data)
-      }
     } else {
       message.error(res.error)
     }
   })
 
-  interaction_service.findInteractions({createdBy: new ObjectId(user_service.getCurrentUser()._id),
+  interaction_service.findInteractions({createdBy: store.user._id,
                                         documentId: article_info.value?._id,
-                                        collection: CollectionType.ARTICLE, isDeleted: false}).then(res => {
+                                        collectionName: CollectionType.ARTICLE}).then(res => {
     if (res.success) {
       res.data?.interactions.forEach(interaction => {
         if (interaction.operation == OperationType.STAR) {
@@ -94,6 +105,7 @@ onBeforeMount(async () => {
   })
 
   article_info.value && comment_service.findComments({article: article_info.value._id}).then(res => {
+    console.log(res)
     if (res.success) {
       comment_aggrate_list.push(...commentCombine(res.data?.comments || []))
       comment_spinning.value = false
@@ -107,14 +119,14 @@ function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[
   let commentAggrateList: CommentAggrateDocument[] = []
 
   commentList.forEach(comment => {
-    if (comment.parentComment + '' == '000000000000000000000000') {
+    if (comment.parentComment == null || comment.parentComment.length == 0) {
       commentAggrateList.push({...comment, children: []})
     }
   })
 
   function combine(innerCommentList: CommentDocument[], fatherCommentList: CommentAggrateDocument[]) {
     for (let comment of innerCommentList) {
-      if (comment.parentComment + '' != '000000000000000000000000') {
+      if (comment.parentComment + '' != null) {
         for (let comment_aggrate of fatherCommentList) {
           if (comment_aggrate._id + '' == comment.parentComment + '') {
             comment_aggrate.children.push({...comment, children: []})
@@ -138,14 +150,10 @@ const handleSubmit = () => {
   submitting.value = true
 
   let comment_new: CommentDocument = {
-    article: article_info.value?._id,
+    article: article_info.value?._id || '',
     content: value.value,
-    parentComment: comment_father_id.value,
-    author: {
-      userId: user_info.value?._id,
-      avatar: user_info.value?.avatar_url || '',
-      username: user_info.value?.username || ''
-    },
+    parentComment: comment_father_id.value || '',
+    createdBy: store.user._id,
     like: 0,
     dislike: 0,
     updatedAt: new Date(),
@@ -153,7 +161,7 @@ const handleSubmit = () => {
     isDeleted: false
   }
   submitting.value = false
-  comment_father_id.value = new ObjectId('000000000000000000000000')
+  comment_father_id.value = null
   comment_service.createComment(comment_new).then((res) => {
     if (res.success) {
       value.value = ''
@@ -175,9 +183,9 @@ async function update(method_num: number) {
       if (is_stared.value) {
         article_info.value.statistics.stars -= 1
         is_stared.value = false
-        interaction_service.deleteInteraction({ documentId: article_info.value._id,
-                                                collection: CollectionType.ARTICLE,
-                                                createdBy: new ObjectId(user_service.getCurrentUser()._id),
+        interaction_service.deleteInteractionByFilter({ documentId: article_info.value._id,
+                                                collectionName: CollectionType.ARTICLE,
+                                                createdBy: user_service.getCurrentUser()._id,
                                                 operation: OperationType.STAR}).then(res => {
                                                   if (res.success) {
                                                     message.success('unstar successfully!')
@@ -189,10 +197,10 @@ async function update(method_num: number) {
         article_info.value.statistics.stars += 1
         is_stared.value = true
         interaction_service.createInteraction({
-          createdBy: new ObjectId(user_service.getCurrentUser()._id),
-          documentId: article_info.value._id,
+          createdBy: user_service.getCurrentUser()._id,
+          documentId: article_info.value._id || '',
           operation: OperationType.STAR,
-          collection: CollectionType.ARTICLE,
+          collectionName: CollectionType.ARTICLE,
           createdAt: new Date(),
           isDeleted: false
         }).then(res => {
@@ -203,17 +211,17 @@ async function update(method_num: number) {
           }
         })
       }
-      article_service.updateArticle(article_info.value?._id, article_info.value)
+      article_info.value._id && article_service.updateArticle(article_info.value?._id, article_info.value)
       break
     case 1:
       // do collect method
       if (is_collected.value) {
         article_info.value.statistics.collections -= 1
         is_collected.value = false
-        interaction_service.deleteInteraction({ documentId: article_info.value._id,
-                                                createdBy: new ObjectId(user_service.getCurrentUser()._id),
+        interaction_service.deleteInteractionByFilter({ documentId: article_info.value._id,
+                                                createdBy: user_service.getCurrentUser()._id,
                                                 operation: OperationType.COLLECT,
-                                                collection: CollectionType.ARTICLE }).then(res => {
+                                                collectionName: CollectionType.ARTICLE }).then(res => {
                                                   if (res.success) {
                                                     message.success('uncollect successfully!')
                                                   } else {
@@ -224,10 +232,10 @@ async function update(method_num: number) {
         article_info.value.statistics.collections += 1
         is_collected.value = true
         interaction_service.createInteraction({
-          createdBy: new ObjectId(user_service.getCurrentUser()._id),
-          documentId: article_info.value._id,
+          createdBy: user_service.getCurrentUser()._id,
+          documentId: article_info.value._id || '',
           operation: OperationType.COLLECT,
-          collection: CollectionType.ARTICLE,
+          collectionName: CollectionType.ARTICLE,
           createdAt: new Date(),
           isDeleted: false
         }).then(res => {
@@ -238,7 +246,7 @@ async function update(method_num: number) {
           }
         })
       }
-      article_service.updateArticle(article_info.value?._id, article_info.value)
+      article_info.value._id && article_service.updateArticle(article_info.value?._id, article_info.value)
       break
     case 2:
       // do transfer method
@@ -260,7 +268,7 @@ function editArticle() {
 
 const confirm = () => {
   return new Promise(resolve => {
-    article_service.deleteById(article_info.value?._id)
+    article_info.value?._id && article_service.deleteById(article_info.value?._id)
     resolve(true)
   })
 }
@@ -276,11 +284,11 @@ const cancel = (e: MouseEvent) => {
       <a-page-header
         :title="article_info.title"
         class="article-detail-container"
-        :avatar="{ src: user_info?.avatar_url }"
+        :avatar="{ src: user_info?.avatar }"
         :breadcrumb="{ routes }"
         @back="() => $router.go(-1)">
         
-        <template #extra v-if="(article_info.createdBy + '') == user_service.getCurrentUser()._id">
+        <template #extra v-if="(article_info.createdBy + '') == user_info?._id">
           <a-button type="primary" @click="editArticle">Edit</a-button>
 
           <a-popconfirm title="Title" @confirm="confirm" @cancel="cancel">
@@ -289,7 +297,7 @@ const cancel = (e: MouseEvent) => {
         </template>
 
         <template #tags>
-          <a-tag :color="tag.color" v-for="tag in article_info.tags" :key="tag._id">{{ tag.name }}</a-tag>
+          <a-tag :color="tag.color" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
 
         <v-md-preview :text="article_info.content"></v-md-preview>
@@ -314,7 +322,7 @@ const cancel = (e: MouseEvent) => {
 
         <a-comment class="comment-input-container">
           <template #avatar>
-            <a-avatar :src="user_info?.avatar_url" :alt="user_info?.username" />
+            <a-avatar :src="user_info?.avatar" :alt="user_info?.username" />
           </template>
           <template #content>
             <a-form-item>

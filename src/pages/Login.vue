@@ -4,13 +4,13 @@ import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { JUMP_DELAY } from '../constant'
-import { UserService } from '../services/UserService'
-import Glassmorphism from '@components/Glassmorphism.vue'
+import { UserService } from '../api/UserService'
+import Glassmorphism from '../components/Glassmorphism.vue'
 import Loading from '../plugins/loading'
 
 
 type FormState = {
-  email: string
+  username: string
   password: string
   remember: boolean
 }
@@ -18,14 +18,14 @@ const router = useRouter()
 const route = useRoute()
 const userService = UserService.getInstance()
 const formState = reactive<FormState>({
-  email: '',
+  username: '',
   password: '',
   remember: true,
 })
 
 const onFinish = (values: FormState) => {
   Loading.show()
-  userService.login(values.email, values.password).then((res) => {
+  userService.login(values.username, values.password).then((res) => {
     if (res.success) {
       message.success('login successfully')
       let to_path = '/'
@@ -36,8 +36,8 @@ const onFinish = (values: FormState) => {
         })
       }, JUMP_DELAY)
     } else {
-      // message.error(res.error)
-      message.error('Error: username or password error')
+      message.error(res.error)
+      // message.error('Error: username or password error')
     }
     Loading.hide()
   })
@@ -52,7 +52,7 @@ const onFinishFailed = (errorInfo: any) => {
 }
 
 const disabled = computed(() => {
-  return !(formState.email && formState.password)
+  return !(formState.username && formState.password)
 })
 </script>
 
@@ -68,12 +68,11 @@ const disabled = computed(() => {
       >
         <h2 class="login-form-title">Sign in</h2>
         <a-form-item
-          name="email"
-          :rules="[{ required: true, message: 'Please input your email!' },
-                   { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
-                     message: 'Email address format not correct' }]"
-        >
-          <a-input v-model:value="formState.email" placeholder="Email">
+          name="username"
+          :rules="[{ required: true, message: 'Please input your username!' }]">
+          <!-- { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
+                     message: 'Email address format not correct' } -->
+          <a-input v-model:value="formState.username" placeholder="Username">
             <template #prefix>
               <i class="iconfont">&#xe66f;</i>
             </template>

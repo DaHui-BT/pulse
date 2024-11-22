@@ -3,34 +3,42 @@ import { reactive, computed } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 
-import { UserService } from '../services/user_service'
+import { UserService } from '../api/UserService'
 
 import Glassmorphism from '@components/Glassmorphism.vue'
 import { JUMP_DELAY } from '../constant'
+import Loading from '../plugins/loading'
 
 
 interface FormState {
   email: string
+  username: string
   password: string
 }
 
 const router = useRouter()
-const user_service = new UserService()
+const user_service = UserService.getInstance()
 const formState = reactive<FormState>({
   email: '',
+  username: '',
   password: '',
 })
 
 const onFinish = (values: FormState) => {
-  user_service.register(values.email, values.password).then(() => {
-    setTimeout(() => {
-      router.push({ path: '/login' })
-    }, JUMP_DELAY)
+  Loading.show()
+  user_service.register(values.username, values.email, values.password).then((res) => {
+    if (res.success) {
+      setTimeout(() => {
+        router.push({ path: '/login' })
+      }, JUMP_DELAY)
+    } else {
+      message.error(res.error)
+    }
+    Loading.hide()
   })
 }
 
 const onFinishFailed = (errorInfo: any) => {
-  console.log('Failed:', errorInfo)
   for (let errorField of errorInfo.errorFields) {
     for (let error of errorField.errors) {  
       message.error(error)
@@ -62,7 +70,7 @@ function resendConfirm() {
         @finishFailed="onFinishFailed"
       >
         <h2 class="register-form-title">Sign up</h2>
-        <!-- <a-form-item
+        <a-form-item
           name="username"
           :rules="[{ required: true, message: 'Please input your username!' },
                    { min: 3, message: 'Username length must large than 3' },
@@ -73,7 +81,7 @@ function resendConfirm() {
               <i class="iconfont">&#xe632;</i>
             </template>
           </a-input>
-        </a-form-item> -->
+        </a-form-item>
 
         <a-form-item
           name="email"
@@ -91,7 +99,7 @@ function resendConfirm() {
         <a-form-item
           name="password"
           :rules="[{ required: true, message: 'Please input your password!' },
-                   { min: 6, max: 32, message: 'Password should in range of (6, 32)' }]"
+                   { min: 8, max: 32, message: 'Password should in range of (8, 32)' }]"
         >
           <a-input-password v-model:value="formState.password" placeholder="Password">
             <template #prefix>

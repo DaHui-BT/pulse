@@ -1,5 +1,3 @@
-import { ObjectId } from '../types/realm'
-
 enum PermissionResource{
   ARTICLE = 'ARTICLE',
   COMMENT = 'COMMENT',
@@ -15,7 +13,7 @@ enum PermissionAction {
 }
 
 interface PermissionDocument {
-  _id?: ObjectId,
+  _id?: string,
   resource: PermissionResource,
   action: PermissionAction,
   description: string,        // Description of the permission, e.g., 'can edit articles'

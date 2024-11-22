@@ -1,6 +1,4 @@
-import { message } from "ant-design-vue"
 import { UserDocument } from "../entities/user"
-import Loading from "../plugins/loading"
 import { fileToBinary, compressImage } from "../tools/image_tools"
 import { Database } from "../tools/realm"
 import { ObjectId, PaginationOptions, ServiceResponse } from "../types/realm"
@@ -37,7 +35,35 @@ class UserService {
 
   async register(email: string, password: string): Promise<ServiceResponse<void>> {
     try {
-      const user = await this.db.connect(email, password)
+      const user = await this.db.register(email, password)
+      return { success: true, data: user }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  
+  async confirmUser(token: string, tokenId: string): Promise<ServiceResponse<void>> {
+    try {
+      const user = await this.db.confirmUser(token, tokenId)
+      return { success: true, data: user }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  async resendConfirmationEmail(email: string): Promise<ServiceResponse<void>> {
+    try {
+      const user = await this.db.resendConfirmationEmail(email)
+      return { success: true, data: user }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  async sendResetPasswordEmail(email: string): Promise<ServiceResponse<void>> {
+    try {
+      const user = await this.db.sendResetPasswordEmail(email)
       return { success: true, data: user }
     } catch (error) {
       return { success: false, error: error.message }

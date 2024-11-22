@@ -1,28 +1,29 @@
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
 
-import { CityService } from '../services/CityService'
+import { CityService } from '../api/CityService'
 import { CityType } from '../types/city'
-import { UserService } from '../services/UserService'
+import { UserService } from '../api/UserService'
 import moment from 'moment'
 import { UserDocument } from '../entities/user'
 import { message } from 'ant-design-vue'
 import Loading from '../plugins/loading'
+import { Store } from '../store'
 
 const props = defineProps({ user_info: { type: Object as () => UserDocument }})
 
+const store = Store()
 const is_open_form = ref<boolean>(false)
 const city_service = CityService.getInstance()
 const user_service = UserService.getInstance()
 const city_list = reactive<CityType[]>([])
 
 const user = ref<UserDocument>(props.user_info as UserDocument)
-const birthday = ref<string>(moment(user.value.birthday).format('YYYY-MM-DD'))
 
 const formState = reactive({
   username: user.value.username,
   email: user.value.email,
-  birthday: moment(user.value.birthday).format('YYYY-MM-DD'),
+  birthday: user.value.birthday,
   gender: user.value.gender,
   province: user.value.profile.location.province,
   city: user.value.profile.location.city,
@@ -38,17 +39,17 @@ async function updateUser() {
   is_open_form.value = false
   try {
     Loading.show()
-    if (birthday.value.length > 0) {
-      user.value.birthday = new Date(formState.birthday)
-    }
+    user.value.birthday = new Date(formState.birthday)
     user.value.username = formState.username
     user.value.email = formState.email
     user.value.gender = formState.gender
     user.value.profile.location.province = formState.province
     user.value.profile.location.city = formState.city
     user.value.description = formState.description
-
-    await user_service.updateUser(user_service.getCurrentUser()._id, user.value)
+    const userResponse = await user_service.updateUser(store.user._id, user.value)
+    if (userResponse.success && userResponse.data) {
+      store.setUser(userResponse.data)
+    }
   } catch (err) {
     console.log(err)
   } finally {

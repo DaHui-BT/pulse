@@ -51,7 +51,11 @@ onMounted(() => {
     
     search = current_name.split('?')[1]
     if (search && search.length > 0) {
-      search = search.split('=')[1]
+      if (search.split('=')[0] == 'search'){
+        search = search.split('=')[1]
+      } else {
+        search = ''
+      }
     }
   } else {
     path = route.name.toString()
@@ -70,6 +74,14 @@ function handleClick({key}: {key: string}) {
 }
 
 function onSearch() {
+  // if (router.currentRoute.value.name == 'Article') {
+  //   router.replace({
+  //     name: 'Article',
+  //     query: {search: search_value.value}
+  //   })
+  //   location.reload()
+  //   return
+  // }
   router.push({
     name: 'Article',
     query: {
