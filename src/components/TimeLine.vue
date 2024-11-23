@@ -3,7 +3,6 @@ import { onMounted, reactive, ref } from 'vue'
 import moment from 'moment'
 import { InteractionService } from '../api/InteractionService'
 import { InteractionDocument, OperationType } from '../entities/interaction'
-import { ObjectId } from '../tools/database'
 import { Store } from '../store'
 
 const store = Store()
@@ -20,7 +19,7 @@ onMounted(() => {
 
 function loadData(isClear: boolean = false) {
   initLoading.value = true
-  interactionService.findInteractions({createdBy: new ObjectId(store.user._id)}).then(res => {
+  interactionService.findInteractions({createdBy:  store.user._id}).then(res => {
     console.log(res)
     isClear && interaction_list.splice(0, interaction_list.length)
     interaction_list.push(...(res.data?.interactions || []))
@@ -81,7 +80,8 @@ function operateType(operate: OperationType) {
             <a-typography-text type="secondary">{{ moment(interaction.createdAt).fromNow() }}</a-typography-text>
           </a-tooltip>
           <a-typography-text class="interaction-text">{{ interaction.operation }} - </a-typography-text>
-          <a-typography-link :href="`#/article-detail?_id=${interaction.documentId + ''}`">{{ interaction.collectionName }}</a-typography-link>
+          <a-typography-link v-if="interaction.collectionName == 'ARTICLE'" :href="`#/article-detail?_id=${interaction.documentId + ''}`">{{ interaction.collectionName }}</a-typography-link>
+          <a-typography-text type="success" v-else>{{ interaction.collectionName }}</a-typography-text>
           </a-timeline-item>
     </a-list>
   </a-timeline>
