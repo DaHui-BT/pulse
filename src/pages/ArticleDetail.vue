@@ -267,9 +267,21 @@ function editArticle() {
 }
 
 const confirm = () => {
-  return new Promise(resolve => {
-    article_info.value?._id && article_service.deleteById(article_info.value?._id)
-    resolve(true)
+  return new Promise(async resolve => {
+    if (article_info.value?._id) {
+      await article_service.deleteById(article_info.value?._id).then(res => {
+        console.log(res)
+        if (res.success) {
+          message.success(res.data)
+          resolve(true)
+        } else {
+          resolve(false)
+        }
+      }).catch(err => {
+        resolve(false)
+      })
+    }
+
   })
 }
 
@@ -291,7 +303,7 @@ const cancel = (e: MouseEvent) => {
         <template #extra v-if="(article_info.createdBy + '') == user_info?._id">
           <a-button type="primary" @click="editArticle">Edit</a-button>
 
-          <a-popconfirm title="Title" @confirm="confirm" @cancel="cancel">
+          <a-popconfirm title="Ready to delete?" @confirm="confirm" @cancel="cancel">
             <a-button type="primary" danger>Delete</a-button>
           </a-popconfirm>
         </template>
@@ -303,7 +315,7 @@ const cancel = (e: MouseEvent) => {
         <v-md-preview :text="article_info.content"></v-md-preview>
       </a-page-header>
 
-      <a-flex class="article-detail-function" gap="20">
+      <!-- <a-flex class="article-detail-function" gap="20">
         <i :class="['iconfont', 'article-detail-function--item',
                     {'article-detail-function--item-activate': is_stared}]"
             @click="update(0)">&#xe69e; {{ article_info.statistics.stars }}</i>
@@ -312,8 +324,9 @@ const cancel = (e: MouseEvent) => {
             @click="update(1)">&#xe604; {{ article_info.statistics.collections }}</i>
         <i class="iconfont article-detail-function--item" 
             @click="update(2)">&#xe63d;</i>
-      </a-flex>
+      </a-flex> -->
       
+      <a-divider style="height: 2px;"></a-divider>
       <a-spin :spinning="comment_spinning">
         <Comment v-for="comment in comment_aggrate_list"
                 :key="comment._id + ''"

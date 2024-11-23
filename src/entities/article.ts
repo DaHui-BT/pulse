@@ -1,8 +1,8 @@
 import { TagDocument } from "./tag"
 
 enum ArticleStatus {
-  PUBLIC = 'PUBLIC',
-  PRIVATE = 'PRIVATE'
+  PUBLIC = 0,
+  PRIVATE = 1
 }
 
 type ArticleDocument = {

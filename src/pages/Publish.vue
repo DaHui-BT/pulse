@@ -6,7 +6,6 @@ import { message, UploadChangeParam } from 'ant-design-vue'
 import { TagService } from '../api/TagService'
 import { ArticleDocument, ArticleStatus } from '../entities/article'
 import { ArticleService } from '../api/ArticleService'
-import { UserService } from '../api/UserService'
 import { FileService } from '../api/FileService'
 import { TagDocument } from '../entities/tag'
 import { Store } from '../store'
@@ -18,7 +17,6 @@ const store = Store()
 const isEdit = ref<boolean>(false)
 const spinning = ref<boolean>(true)
 const articleService = ArticleService.getInstance()
-const userService = UserService.getInstance()
 const fileService = FileService.getInstance()
 const tagService = TagService.getInstance()
 const tag_list = reactive<TagDocument[]>([])
@@ -60,7 +58,6 @@ const article = ref<ArticleDocument>({
 
 onMounted(() => {
   tagService.findAllTags().then(res => {
-    console.log(res)
     if (res.success) {
       tag_list.splice(0, tag_list.length)
       tag_list.push(...(res.data || []))
@@ -72,13 +69,14 @@ onMounted(() => {
 
   if (route.query._id != undefined && route.query._id != null) {
     isEdit.value = true
+    spinning.value = true
     articleService.findArticleById((route.query._id + '')).then(res => {
       if (res.success) {
         if (!res.data) {
           throw new Error('no such article')
         }
         formState.title = res.data.title
-        formState.tag_list = res.data.tags.map(tags => tags._id + '')
+        formState.tag_list = res.data.tags
         formState.isPublic = res.data.status === ArticleStatus.PUBLIC
         formState.description = res.data.description
         formState.content = res.data.content
@@ -87,6 +85,10 @@ onMounted(() => {
       } else {
         message.error(res.error)
       }
+      spinning.value = false
+    }).catch((err) => {
+      message.error(err)
+      spinning.value = false
     })
   }
 })
@@ -115,8 +117,8 @@ async function handleUploadImage(e: Event, insertImage: Function, files: File[])
   
 }
 
-function onFinish(values: FormState) {
-  console.log(values)
+async function onFinish(values: FormState) {
+  Loading.show()
   article.value.title = values.title
   article.value.description = values.description
   article.value.content = values.content
@@ -127,7 +129,7 @@ function onFinish(values: FormState) {
       throw new Error('Article id error')
     }
     article.value.updatedAt = new Date()
-    articleService.updateArticle(formState._id, article.value).then(res => {
+    await articleService.updateArticle(formState._id, article.value).then(res => {
       if (res.success) {
         message.success('update article successfully!')
       } else {
@@ -137,7 +139,7 @@ function onFinish(values: FormState) {
   } else {
     article.value.createdAt = new Date()
     article.value.updatedAt = new Date()
-    articleService.createArticle(article.value).then(res => {
+    await articleService.createArticle(article.value).then(res => {
       if (res.success) {
         message.success('publish article successfully!')
       } else {
@@ -145,6 +147,7 @@ function onFinish(values: FormState) {
       }
     })
   }
+  Loading.hide()
 }
 
 function onFinishFailed(values: { values: FormState,
