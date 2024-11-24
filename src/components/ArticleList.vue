@@ -12,47 +12,23 @@ const props = defineProps({
   }
 })
 
-interface DataItem {
-  href: string;
-  title: string;
-  avatar: string;
-  description: string;
-  content: string;
-}
 const articleService = ArticleService.getInstance()
 const articleList = reactive<ArticleDocument[]>([])
 
-const listData: DataItem[] = [];
-
-for (let i = 0; i < 3; i++) {
-  listData.push({
-    href: 'https://www.antdv.com/',
-    title: `ant design vue part ${i}`,
-    avatar: 'https://joeschmoe.io/api/v1/random',
-    description:
-      'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-    content:
-      'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-  });
-}
-
-const loading = ref<boolean>(true);
 const initLoading = ref(true);
-
-const actions = [
-  { icon: StarOutlined, text: '156' },
-  { icon: LikeOutlined, text: '156' },
-  { icon: MessageOutlined, text: '2' },
-];
+const loading = ref<boolean>(true);
+const spinning = ref<boolean>(true)
 
 onMounted(() => {
   articleList.splice(0, articleList.length)
   articleService.findArticles({ createdBy: props.userId }).then(res => {
     articleList.push(...(res.data?.articles || []))
     loading.value = false
+    spinning.value = false
   }).catch(err => {
     message.error(err)
     loading.value = false
+    spinning.value = false
   })
 })
 
@@ -62,8 +38,15 @@ const onLoadMore = () => {
 </script>
 
 <template>
-  <div>
+  <a-spin :spinning="spinning">
     <a-list item-layout="vertical" size="large" :data-source="articleList">
+      <template #loadMore>
+        <div v-if="!initLoading && !loading"
+          :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }">
+          <a-button @click="onLoadMore">loading more</a-button>
+        </div>
+      </template>
+
       <template #renderItem="{ item }">
         <a-list-item key="item.title">
         <template #extra v-if="!loading">
@@ -98,7 +81,7 @@ const onLoadMore = () => {
         </a-list-item>
       </template>
     </a-list>
-  </div>
+  </a-spin>
 </template>
 
 <style scoped>

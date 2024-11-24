@@ -25,7 +25,7 @@ const upload_input = ref<HTMLInputElement | null>(null)
 let spinning = ref<boolean>(false)
 const isShowArticleManager = ref<boolean>(false)
 
-
+Loading.show()
 userService.findUserById(store.user._id).then(res => {
   if (res.success) {
     user_info.value = res.data
@@ -36,7 +36,8 @@ userService.findUserById(store.user._id).then(res => {
       router.push('/login')
     }
   }
-})
+  Loading.hide()
+}).catch(() => Loading.hide())
 
 async function uploadFile(event: any) {
   if (!user_info.value?._id) {
