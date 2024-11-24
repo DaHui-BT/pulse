@@ -16,6 +16,7 @@ import Comment from '../components/Comment.vue'
 import { Store } from '../store'
 import { TagService } from '../api/TagService'
 import { TagDocument } from '../entities/tag'
+import { JUMP_DELAY } from '../constant'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +30,7 @@ const tagService = TagService.getInstance()
 const comment_aggrate_list = reactive<Array<CommentAggrateDocument>>([])
 const article_info = ref<ArticleDocument>()
 const user_info = ref<UserDocument>()
+const current_user = ref<UserDocument>(store.user)
 const tag_list = reactive<TagDocument[]>([])
 let spinning = ref<boolean>(true)
 let comment_spinning = ref<boolean>(true)
@@ -78,8 +80,7 @@ onBeforeMount(async () => {
     }
   })
   
-  // TODO only show user part information
-  article_info.value && user_service.findUserById(article_info.value?.createdBy).then(res => {
+  article_info.value && user_service.findUserInfoById(article_info.value.createdBy).then(res => {
     if (res.success) {
       user_info.value = res.data
     } else {
@@ -105,7 +106,6 @@ onBeforeMount(async () => {
   })
 
   article_info.value && comment_service.findComments({article: article_info.value._id}).then(res => {
-    console.log(res)
     if (res.success) {
       comment_aggrate_list.push(...commentCombine(res.data?.comments || []))
       comment_spinning.value = false
@@ -272,7 +272,10 @@ const confirm = () => {
       await article_service.deleteById(article_info.value?._id).then(res => {
         console.log(res)
         if (res.success) {
-          message.success(res.data)
+          message.success('Delete article successfully!')
+          setTimeout(() => {
+            router.push('/article')
+          }, JUMP_DELAY)
           resolve(true)
         } else {
           resolve(false)
@@ -300,7 +303,7 @@ const cancel = (e: MouseEvent) => {
         :breadcrumb="{ routes }"
         @back="() => $router.go(-1)">
         
-        <template #extra v-if="(article_info.createdBy + '') == user_info?._id">
+        <template #extra v-if="article_info.createdBy == current_user?._id">
           <a-button type="primary" @click="editArticle">Edit</a-button>
 
           <a-popconfirm title="Ready to delete?" @confirm="confirm" @cancel="cancel">

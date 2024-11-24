@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { message, UploadChangeParam } from 'ant-design-vue'
 
 import { TagService } from '../api/TagService'
@@ -10,9 +10,11 @@ import { FileService } from '../api/FileService'
 import { TagDocument } from '../entities/tag'
 import { Store } from '../store'
 import Loading from '../plugins/loading'
+import { JUMP_DELAY } from '../constant'
 
 
 const route = useRoute()
+const router = useRouter()
 const store = Store()
 const isEdit = ref<boolean>(false)
 const spinning = ref<boolean>(true)
@@ -132,6 +134,9 @@ async function onFinish(values: FormState) {
     await articleService.updateArticle(formState._id, article.value).then(res => {
       if (res.success) {
         message.success('update article successfully!')
+        setTimeout(() => {
+          router.push('/article')
+        }, JUMP_DELAY)
       } else {
         message.error(res.error)
       }
@@ -142,6 +147,9 @@ async function onFinish(values: FormState) {
     await articleService.createArticle(article.value).then(res => {
       if (res.success) {
         message.success('publish article successfully!')
+        setTimeout(() => {
+          router.push('/article')
+        }, JUMP_DELAY)
       } else {
         message.error(res.error)
       }
