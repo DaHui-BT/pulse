@@ -1,19 +1,23 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import moment from 'moment'
 
 import { ArticleDocument } from '../entities/article'
-import { TagService } from '../api/TagService';
+import { TagDocument } from '../entities/tag';
 
 
 const props = defineProps({
   content: {
     type: Object as () => ArticleDocument,
     required: true
+  },
+  tag_list: {
+    type: Object as () => TagDocument[],
+    required: true
   }
 })
-const tagService = TagService.getInstance()
 const loading = ref(props.content == null)
+const current_tag_list = reactive<TagDocument[]>([])
 
 const publishDate = computed(() => {
   return moment(props.content.createdAt).format('YYYY-MM-DD HH:mm')
@@ -24,14 +28,14 @@ const updateDate = computed(() => {
 })
 
 onMounted(() => {
-  tagService.findAllTags().then(res => {
-    props.content.tagList = []
-    res.data?.forEach(tag => {
-      if (props.content.tags.includes(tag._id)) {
-        props.content.tagList?.push(tag)
+  current_tag_list.splice(0, current_tag_list.length)
+  for (let tagId of props.content.tags) {
+    for (let tag of props.tag_list) {
+      if (tag._id == tagId) {
+        current_tag_list.push(tag)
       }
-    })
-  })
+    }
+  }
 })
 
 </script>
@@ -40,10 +44,11 @@ onMounted(() => {
   <a-card :loading="loading">
     <template #title>
       <a-flex class="info-conatiner" justify="space-between" wrap="wrap">
-        <a-typography-link class="title-ellipsis" :href="`#/article-detail?_id=${content._id}`" ellipsis :content="content.title"></a-typography-link>
-
-        <div class="info-tag-container">
-          <a-tag :color="tag.color" v-for="tag in content.tagList" :key="tag">{{ tag.name }}</a-tag>
+        <a-typography-link class="title-ellipsis"
+                           :href="`#/article-detail?_id=${content._id}`"
+                           ellipsis :content="content.title"></a-typography-link>
+        <div class="info-tag-container" v-if="current_tag_list.length > 0">
+          <a-tag :color="tag.color" v-for="tag in current_tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </div>
       </a-flex>
     </template>
@@ -57,7 +62,7 @@ onMounted(() => {
       </a-tooltip>
       
       <a-tooltip placement="top">
-        <a-typography-text type="secondary"><i class="iconfont">&#xe968;</i> {{ updateDate}}</a-typography-text>
+        <a-typography-text type="secondary"><i class="iconfont">&#xe968;</i> {{ updateDate }}</a-typography-text>
         <template #title>
           update date
         </template>

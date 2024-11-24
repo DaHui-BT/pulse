@@ -7,12 +7,16 @@ import ContentCard from '../components/ContentCard.vue'
 import Constant from '../constant'
 import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
+import { TagService } from '../api/TagService'
+import { TagDocument } from '../entities/tag'
 
 
 const articleService = ArticleService.getInstance()
+const tagService = TagService.getInstance()
 const route = useRoute()
 const spinning = ref<boolean>(true)
 let article_list = reactive<ArticleDocument[]>([])
+const tag_list = reactive<TagDocument[]>([])
 let current_page = ref<number>(1)
 let total_page = ref<number>(1)
 const page_size = ref<number>(Constant.PAGE_SIZE)
@@ -39,6 +43,10 @@ onMounted(() => {
   } else {
     loadData()
   }
+  
+  tagService.findAllTags().then(res => {
+    tag_list.push(...(res.data || []))
+  })
 })
 
 function changePage(page_number: number) {
@@ -58,11 +66,12 @@ function changePage(page_number: number) {
 <template>
   <a-spin :spinning="spinning">
     <a-typography-title :level="2">Article</a-typography-title>
-    <a-flex class="article" vertical v-if="article_list.length > 0">
+    <a-flex class="article" vertical v-if="article_list.length > 0 && tag_list.length > 0">
       <content-card class="article-item"
                     v-for="article in article_list"
                     :key="article._id"
-                    :content="article"></content-card>
+                    :content="article"
+                    :tag_list="tag_list"></content-card>
     </a-flex>
 
     <a-empty v-else></a-empty>

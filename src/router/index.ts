@@ -92,6 +92,15 @@ const routes: Readonly<RouteRecordRaw[]> = [
       needContainer: false
     }
   }, {
+    path: '/confirm',
+    name: 'Confirm',
+    component: () => import('../pages/Confirm.vue'),
+    meta: {
+      requiresAuth: false,
+      showNavbar: false,
+      needContainer: false
+    }
+  }, {
     path: '/:catchAll(.*)',
     name: '404',
     component: () => import('../pages/NotFound.vue'),

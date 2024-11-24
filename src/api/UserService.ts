@@ -48,7 +48,7 @@ class UserService {
           password: password
         }
       })
-      if (response.data.code == 200) {
+      if (response.code == 200) {
         return { success: true }
       } else {
         return { success: false, error: response.message}
@@ -59,9 +59,9 @@ class UserService {
   }
   
   
-  async confirmUser(userId: string): Promise<ServiceResponse<void>> {
+  async confirmUser(token: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.put(`/user/${userId}`, { data: {status: 1} })
+      const response = await this.request.post(`/user/confirm`, { data: {token: token} })
       if (response.code == 200) {
         return { success: true }
       } else {

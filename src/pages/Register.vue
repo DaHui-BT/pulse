@@ -28,6 +28,7 @@ const onFinish = (values: FormState) => {
   Loading.show()
   user_service.register(values.username, values.email, values.password).then((res) => {
     if (res.success) {
+      message.success('Regsiter successfully!')
       setTimeout(() => {
         router.push({ path: '/login' })
       }, JUMP_DELAY)
