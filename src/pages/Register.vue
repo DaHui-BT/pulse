@@ -67,11 +67,13 @@ function resendConfirm() {
         :model="formState"
         name="normal_register"
         class="register-form"
+        :label-col="{ span: 6 }"
         @finish="onFinish"
         @finishFailed="onFinishFailed"
       >
         <h2 class="register-form-title">Sign up</h2>
         <a-form-item
+          label="Username"
           name="username"
           :rules="[{ required: true, message: 'Please input your username!' },
                    { min: 3, message: 'Username length must large than 3' },
@@ -85,6 +87,7 @@ function resendConfirm() {
         </a-form-item>
 
         <a-form-item
+          label="Email"
           name="email"
           :rules="[{ required: true, message: 'Please input your email!' },
                    { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
@@ -98,6 +101,7 @@ function resendConfirm() {
         </a-form-item>
 
         <a-form-item
+          label="Password"
           name="password"
           :rules="[{ required: true, message: 'Please input your password!' },
                    { min: 8, max: 32, message: 'Password should in range of (8, 32)' }]"
@@ -130,7 +134,7 @@ function resendConfirm() {
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  background: linear-gradient(70deg, rgb(0, 255, 200), 10%, rgb(251, 208, 133));
+  background: linear-gradient(70deg, rgb(0, 255, 200), 10%, rgb(250, 218, 218));
 
   .register-form {
     padding: 30px 30px;

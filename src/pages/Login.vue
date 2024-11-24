@@ -68,6 +68,7 @@ const disabled = computed(() => {
       >
         <h2 class="login-form-title">Sign in</h2>
         <a-form-item
+          label="Username"
           name="username"
           :rules="[{ required: true, message: 'Please input your username!' }]">
           <!-- { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
@@ -80,6 +81,7 @@ const disabled = computed(() => {
         </a-form-item>
 
         <a-form-item
+          label="Password"
           name="password"
           :rules="[{ required: true, message: 'Please input your password!' },
                    { min: 6, max: 32, message: 'Password should in range of (6, 32)' }]"
@@ -117,7 +119,7 @@ const disabled = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-  background: linear-gradient(70deg, rgb(0, 255, 200), 10%, rgb(251, 208, 133));
+  background: linear-gradient(70deg, rgb(0, 255, 200), 10%, rgb(250, 218, 218));
 
   .login-form {
     padding: 30px 30px;

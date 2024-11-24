@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { message } from 'ant-design-vue'
+import { createVNode, ref } from 'vue'
+import { message, Modal } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
+import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
 import { UserService } from '../api/UserService'
 import { FileService } from '../api/FileService'
 
 import EditForm from '../components/EditForm.vue'
 import TimeLine from '../components/TimeLine.vue'
+import ArticleList from '../components/ArticleList.vue'
 import { UserDocument } from '../entities/user'
 import Loading from '../plugins/loading'
 import { Store } from '../store'
@@ -21,10 +23,10 @@ const user_info = ref<UserDocument>()
 // const show_confirm = ref<boolean>(false)
 const upload_input = ref<HTMLInputElement | null>(null)
 let spinning = ref<boolean>(false)
+const isShowArticleManager = ref<boolean>(false)
 
 
 userService.findUserById(store.user._id).then(res => {
-  console.log(res)
   if (res.success) {
     user_info.value = res.data
     res.data && store.setUser(res.data)
@@ -59,6 +61,43 @@ function handleChange() {
   upload_input.value?.click()
 }
 
+function logout() {
+  Modal.confirm({
+    title: 'Confirm',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: 'Is ready to logout?',
+    okText: 'Confirm',
+    cancelText: 'Cancel',
+    onOk() {
+      store.logout()
+      location.reload()
+    }
+  })
+}
+
+function deleteUser() {
+  Modal.confirm({
+    title: 'Confirm',
+    icon: createVNode(ExclamationCircleOutlined),
+    content: 'Is ready to delete account?',
+    okText: 'Confirm',
+    cancelText: 'Cancel',
+    onOk() {
+      // TODO delete
+      user_info.value && userService.deleteById(user_info.value._id).then(res => {
+        if (res.success) {
+          message.success('Delete successfully!')
+          store.logout()
+        } else {
+          message.error(res.error)
+        }
+      }).catch(err => {
+        message.error(err)
+      })
+    }
+  })
+}
+
 </script>
 
 <template>
@@ -87,6 +126,20 @@ function handleChange() {
           <a-descriptions-item label="Gender">{{ user_info?.gender ? 'Male' : 'Female' }}</a-descriptions-item>
           <a-descriptions-item label="Describe">{{ user_info?.description }}</a-descriptions-item>
         </a-descriptions>
+      </section>
+      
+      <section class="profile-section">
+        <a-typography-title :level="3">Function Section</a-typography-title>
+        <a-flex :gap="20">
+          <a-button @click="isShowArticleManager = !isShowArticleManager">Manage Article</a-button>
+          <a-button @click="logout">Logout</a-button>
+          <a-button danger @click="deleteUser">Delete Account</a-button>
+        </a-flex>
+      </section>
+      
+      <section class="profile-section" v-if="isShowArticleManager && user_info?._id">
+        <a-typography-title :level="3">Article Manager</a-typography-title>
+        <article-list :userId="user_info?._id"></article-list>
       </section>
     
       <section class="profile-section">

@@ -200,7 +200,7 @@ class UserService {
     try {
       const response = await this.request.delete<UserDocument>(`/user/${userId}`)
       if (response.code == 200) {
-        return { success: true, data: response.data }
+        return { success: true, data: true }
       } else {
         return { success: false, error: response.message }
       }

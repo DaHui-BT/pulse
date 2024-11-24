@@ -20,7 +20,6 @@ onMounted(() => {
 function loadData(isClear: boolean = false) {
   initLoading.value = true
   interactionService.findInteractions({createdBy:  store.user._id}).then(res => {
-    console.log(res)
     isClear && interaction_list.splice(0, interaction_list.length)
     interaction_list.push(...(res.data?.interactions || []))
     initLoading.value = false
@@ -89,7 +88,9 @@ function operateType(operate: OperationType) {
 
 <style lang="scss" scoped>
 .time-line {
-  margin-top: 20px;
+  padding: 20px;
+  max-height: 300px;
+  overflow-x: auto;
 
   .interaction-text {
     margin-left: 20px;
