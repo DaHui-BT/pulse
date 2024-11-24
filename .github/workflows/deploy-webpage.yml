@@ -22,6 +22,14 @@ jobs:
     - name: Build Project
       run: npm run build
 
+    - name: Copy CNAME file
+      run: |
+        if [ -f public/CNAME ]; then
+          cp public/CNAME dist/CNAME
+        else
+          echo "CNAME file does not exist in public directory."
+        fi
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
