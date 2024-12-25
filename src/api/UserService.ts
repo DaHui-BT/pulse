@@ -28,7 +28,6 @@ class UserService {
       const response = await this.request.put<{user: UserDocument, token: string, expiration: number}>('/user/login', {data: {username, password}})
 
       if (response.code == 200) {
-        console.log(response)
         this.store.setAccessToken(response.data.token, response.data.expiration + '')
         this.store.setUser(response.data.user)
         return { success: true }
