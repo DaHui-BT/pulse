@@ -3,6 +3,7 @@ import { fileToBinary, compressImage } from "../tools/image_tools"
 import { Request } from "../tools/request"
 import { PaginationOptions, ServiceResponse } from "../types/realm"
 import { Store } from '../store/index'
+import { AxiosRequestConfig } from "axios"
 
 
 class UserService {
@@ -74,8 +75,12 @@ class UserService {
   
   async resendConfirmationEmail(email: string): Promise<ServiceResponse<void>> {
     try {
-      // const user = await this.request.resendConfirmationEmail(email)
-      // return { success: true, data: user }
+      const response = await this.request.post('/user/resend-email', { data: { email: email } })
+      if (response.code == 200) {
+        return { success: true }
+      } else {
+        return { success: false, error: response.message}
+      }
     } catch (error: any) {
       return { success: false, error: error.message }
     }
@@ -97,6 +102,32 @@ class UserService {
   public async findUserById(userId: string): Promise<ServiceResponse<UserDocument>> {
     try {
       const response = await this.request.get<UserDocument>(`/user/${userId}`)
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      } else {
+        return { success: false, error: response.message, data: response.data }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async findUserByUsername(username: string): Promise<ServiceResponse<UserDocument>> {
+    try {
+      const response = await this.request.get<UserDocument>(`/user/info-username/${username}`)
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      } else {
+        return { success: false, error: response.message, data: response.data }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async existUserByUsername(username: string, options: AxiosRequestConfig = {}): Promise<ServiceResponse<UserDocument>> {
+    try {
+      const response = await this.request.get<UserDocument>(`/user/exist/${username}`, options)
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {

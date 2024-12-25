@@ -8,6 +8,8 @@ import { UserService } from '../api/UserService'
 import Glassmorphism from '@components/Glassmorphism.vue'
 import { JUMP_DELAY } from '../constant'
 import Loading from '../plugins/loading'
+import { ValidatorRule } from 'ant-design-vue/es/form/interface'
+import { useDebounce } from '../utils/debounse'
 
 
 interface FormState {
@@ -17,6 +19,7 @@ interface FormState {
 }
 
 const router = useRouter()
+const debounce = useDebounce()
 const user_service = UserService.getInstance()
 const formState = reactive<FormState>({
   email: '',
@@ -51,6 +54,24 @@ const disabled = computed(() => {
   return !(formState.email && formState.password)
 })
 
+function checkUsernameExist(_: ValidatorRule, value: string) {
+  return new Promise((resolve, reject) => {
+    if (value.length < 4) {
+      resolve(false)
+    }
+    debounce(() => {
+      user_service.existUserByUsername(value).then(res => {
+        if (res.data) {
+          resolve(true)
+        } else {
+          reject(false)
+        }
+      })
+    }, 1000)
+    
+  })
+}
+
 function resendConfirm() {
   if (formState.email.length == 0) {
     message.error('Please input your email first')
@@ -76,8 +97,9 @@ function resendConfirm() {
           label="Username"
           name="username"
           :rules="[{ required: true, message: 'Please input your username!' },
-                   { min: 3, message: 'Username length must large than 3' },
-                   { max: 16, message: 'Username length must less than 16' }]"
+                   { min: 4, message: 'Username length must large than 3' },
+                   { max: 16, message: 'Username length must less than 16' },
+                   { message: 'Username already exist', validator: checkUsernameExist }]"
         >
           <a-input v-model:value="formState.username" placeholder="Username">
             <template #prefix>
@@ -104,7 +126,9 @@ function resendConfirm() {
           label="Password"
           name="password"
           :rules="[{ required: true, message: 'Please input your password!' },
-                   { min: 8, max: 32, message: 'Password should in range of (8, 32)' }]"
+                   { min: 8, max: 32, message: 'Password should be range (8, 32)!' },
+                   { pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,32}$/,
+                     message: 'Both letters and numbers required'}]"
         >
           <a-input-password v-model:value="formState.password" placeholder="Password">
             <template #prefix>
