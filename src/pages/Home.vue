@@ -55,7 +55,7 @@ function jump() {
 
 <style lang="scss" scoped>
 .home {
-  background-color: var(-background-color);
+  background-color: var(--content-color);
   text-align: center;
 
   .home-hero {
@@ -112,8 +112,8 @@ function jump() {
 }
 
 .wave {
-  height: 500px;
-  margin-top: -500px;
+  height: 350px;
+  margin-top: -350px;
   --c: var(--primary-color);
   --w1: radial-gradient(100% 57% at top, #0000 100%, var(--c) 100.5%) no-repeat;
   --w2: radial-gradient(100% 57% at bottom, var(--c) 100%, #0000 100.5%) no-repeat;
