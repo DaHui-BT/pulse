@@ -89,6 +89,7 @@ function changePage(page_number: number) {
 
   .article-item {
     margin-bottom: var(--small-margin);
+    box-shadow: 0px 0px 6px rgba(0, 0, 0, .12);
   }
   
   .article-pagination {

@@ -4,22 +4,25 @@ import { reactive, ref, computed } from 'vue'
 import { CityService } from '../api/CityService'
 import { CityType } from '../types/city'
 import { UserService } from '../api/UserService'
-import moment from 'moment'
 import { UserDocument } from '../entities/user'
 import { message } from 'ant-design-vue'
 import Loading from '../plugins/loading'
 import { Store } from '../store'
+import { useDebounce } from '../utils/debounce'
+import { ValidatorRule } from 'ant-design-vue/es/form/interface'
 
 const props = defineProps({ user_info: { type: Object as () => UserDocument }})
+type validatorStatus = 'validating' | 'warning' | 'error' | 'success'
 
 const store = Store()
 const is_open_form = ref<boolean>(false)
 const city_service = CityService.getInstance()
 const user_service = UserService.getInstance()
 const city_list = reactive<CityType[]>([])
-
+const validating = ref<validatorStatus>('success')
 const user = ref<UserDocument>(props.user_info as UserDocument)
-
+const debounce = useDebounce()
+const help_message = ref<string>('')
 const formState = reactive({
   username: user.value.username,
   email: user.value.email,
@@ -65,6 +68,43 @@ const city = computed(() => {
   }
 })
 
+function checkUsernameExist(_rule: ValidatorRule, value: string) {
+  function setValidateStatus(status: validatorStatus, message: string) {
+    validating.value = status
+    help_message.value = message
+  }
+
+  return new Promise((resolve, reject) => {
+    debounce(() => {
+      setValidateStatus('validating', '')
+      if (value.length == 0) {
+        setValidateStatus('error', 'Please input your username!')
+        resolve(true);
+      } else if (value.length < 4) {
+        setValidateStatus('error', 'Username length must large than 3')
+        reject(new Error('Username length must large than 3'));
+      } else if (value.length > 16) {
+        setValidateStatus('error', 'Username length must less than 16.')
+        reject(new Error('Username length must less than 16.'));
+      } else {
+        user_service.existUserByUsername(value).then(res => {
+          if (res.data) {
+            setValidateStatus('success', '')
+            resolve(true)
+          } else {
+            setValidateStatus('error', 'Username already exists.')
+            reject(new Error('Username already exists.'));
+          }
+        }).catch(err => {
+          console.log(err)
+          setValidateStatus('error', 'Error checking username availability.')
+          reject(new Error('Error checking username availability.'))
+        })
+      }
+    }, 1000)
+  })
+}
+
 function changeProvince() {
   formState.city = ''
 }
@@ -90,7 +130,10 @@ function finishFailed({ values, errorFields, outOfDate }: {
   <a-modal v-model:open="is_open_form" title="Edit Profile" ok-text="Comfirm" cancel-text="Cancel">
     <a-form class="edit-form" :model="formState" @finishFailed="finishFailed" @finish="updateUser">
 
-      <a-form-item name="username" label="Name" :rules="[{ required: true, max: 16, min: 2 }]">
+      <a-form-item name="username" label="Name" has-feedback
+        :validate-status="validating"
+        :help="help_message"
+        :rules="[{required: true, message: 'Username is requeired'}, { validator: checkUsernameExist }]">
         <a-input v-model:value="formState.username" />
       </a-form-item>
       

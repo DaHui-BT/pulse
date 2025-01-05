@@ -56,7 +56,7 @@ const value = ref<string>('')
 const comment_father_id = ref<string | null>()
 const is_stared = ref<boolean>(false)
 const is_collected = ref<boolean>(false)
-const comment_placeholder = ref<string>('input your comment')
+const replay_placeholder = ref<string>()
 
 onBeforeMount(async () => {
   await article_service.findArticleById(route.query._id + '').then(res => {
@@ -162,13 +162,27 @@ const handleSubmit = () => {
   }
   submitting.value = false
   comment_father_id.value = null
+  comment_spinning.value = true
   comment_service.createComment(comment_new).then((res) => {
     if (res.success) {
       value.value = ''
       message.success('publish comment successfully!')
+      // TODO load comment again
+      article_info.value && comment_service.findComments({article: article_info.value._id}).then(res => {
+        if (res.success) {
+          comment_aggrate_list.splice(0, comment_aggrate_list.length)
+          comment_aggrate_list.push(...commentCombine(res.data?.comments || []))
+          closePlaceholder()
+        } else {
+          message.error(res.error)
+        }
+        comment_spinning.value = false
+      }).catch(() => comment_spinning.value = false)
     } else {
       message.error(res.error)
     }
+  }).catch(() => {
+    comment_spinning.value = false
   })
 }
 
@@ -258,8 +272,13 @@ async function update(method_num: number) {
 
 function replay(comment: CommentDocument) {
   comment._id && (comment_father_id.value = comment._id)
-  comment_placeholder.value = 'Replay to: ' + comment.author.username
+  replay_placeholder.value = comment?.author?.username
   comment_input.value?.focus()
+}
+
+function closePlaceholder() {
+  comment_father_id.value = null
+  replay_placeholder.value = ''
 }
 
 function editArticle() {
@@ -335,14 +354,18 @@ const cancel = (e: MouseEvent) => {
                 :key="comment._id + ''"
                 :comment="comment"
                 @replay="replay"></Comment>
-
+                
         <a-comment class="comment-input-container">
           <template #avatar>
-            <a-avatar :src="user_info?.avatar" :alt="user_info?.username" />
+            <a-avatar :src="store.user?.avatar" :alt="user_info?.username" />
           </template>
           <template #content>
+            <div class="replay-placeholder" v-if="replay_placeholder">
+              <a-typography-text type="secondary">Replay to: {{ replay_placeholder }}</a-typography-text>
+              <a-typography-text type="secondary" class="close" @click="closePlaceholder">x</a-typography-text>
+            </div>
             <a-form-item>
-              <a-textarea v-model:value="value" :rows="4" :placeholder="comment_placeholder" ref="comment_input" />
+              <a-textarea v-model:value="value" :rows="4" placeholder="input your comment" ref="comment_input" />
             </a-form-item>
             <a-form-item>
               <a-button html-type="submit" :loading="submitting" type="primary" @click="handleSubmit">
@@ -376,6 +399,21 @@ const cancel = (e: MouseEvent) => {
 
     .article-detail-function--item-activate {
       color: #108ee9;
+    }
+  }
+
+  .comment-input-container {
+
+    .replay-placeholder {
+      display: flex;
+      justify-content: space-between;
+      // background-color: #eee;
+      border-radius: 8px;
+      padding: 3px 15px;
+
+      .close {
+        cursor: pointer;
+      }
     }
   }
 }

@@ -9,7 +9,7 @@ import Glassmorphism from '@components/Glassmorphism.vue'
 import { JUMP_DELAY } from '../constant'
 import Loading from '../plugins/loading'
 import { ValidatorRule } from 'ant-design-vue/es/form/interface'
-import { useDebounce } from '../utils/debounse'
+import { useDebounce } from '../utils/debounce'
 
 
 interface FormState {

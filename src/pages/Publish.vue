@@ -218,7 +218,7 @@ const handleChange = async (info: UploadChangeParam) => {
             :maxCount="1"
             accept=".md"
           >
-            <a-button>
+            <a-button ghost type="primary">
               Upload to Analyse
             </a-button>
           </a-upload>

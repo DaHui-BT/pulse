@@ -3,12 +3,13 @@ function useDebounce() {
 
   function _debounce(callback: Function, duration: number = 1000, 
                      controller: AbortController | null = null, ...args: any[]) {
+
     if (timer) {
       clearTimeout(timer)
       // controller && controller.abort()
     }
-    
-    timer = setTimeout(() => {
+
+    timer = setTimeout(async () => {
       callback(args)
     }, duration) as unknown as number
   }

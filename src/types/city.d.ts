@@ -1,7 +1,7 @@
 import { BSON } from 'realm-web'
 
 type CityType = {
-  _id?: BSON.ObjectId,
+  _id?: string,
   province: String,
   city: String[]
 }

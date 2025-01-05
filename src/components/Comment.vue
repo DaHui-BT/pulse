@@ -2,10 +2,11 @@
 import { computed, ref } from 'vue'
 import moment from 'moment'
 
-// import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from '@ant-design/icons-vue'
+import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined } from '@ant-design/icons-vue'
 import { CommentAggrateDocument } from '../entities/comment'
+import Comment from './Comment.vue'
 
-const emits = defineEmits(['replay'])
+const emits = defineEmits(['replay', 'like', 'dislike'])
 const props = defineProps({
   comment: {
     type: Object as () => CommentAggrateDocument,
@@ -13,24 +14,25 @@ const props = defineProps({
   }
 })
 
-const likes = ref<number>(0);
-const dislikes = ref<number>(0);
-  const action = ref<string>();
+const likes = ref<number>(10)
+const dislikes = ref<number>(0)
+const action = ref<string>()
 
 const like = () => {
-  likes.value = 1;
-  dislikes.value = 0;
-  action.value = 'liked';
-};
+  likes.value += 1
+  dislikes.value -= 1
+  action.value = 'liked'
+  emits('like')
+}
 
 const dislike = () => {
-  likes.value = 0;
-  dislikes.value = 1;
-  action.value = 'disliked';
-};
+  likes.value -= 1
+  dislikes.value += 1
+  action.value = 'disliked'
+  emits('dislike')
+}
 
 function replay(comment: CommentAggrateDocument) {
-  console.log(comment)
   emits('replay', comment)
 }
 
@@ -47,10 +49,10 @@ const fromNow = computed(() => {
 <template>
   <a-comment class="comment">
     <template #author>
-      <a :href="`#/user-info?use_id=${comment.author.userId}`">{{ comment?.author?.username }}</a>
+      <a :href="`#/user-info?use_id=${comment?.author?.userId}`">{{ comment?.author?.username }}</a>
     </template>
     <template #avatar>
-      <a-avatar :src="comment.author?.avatar" :alt="comment.author.username" />
+      <a-avatar :src="comment.author?.avatar" :alt="comment?.author?.username" />
     </template>
     <template #datetime>
       <a-tooltip :title="updateTime">

@@ -1,4 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method, AxiosInterceptorManager, InternalAxiosRequestConfig, AxiosRequestHeaders, AxiosHeaders } from 'axios'
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method,
+                AxiosInterceptorManager, InternalAxiosRequestConfig,
+                AxiosHeaders } from 'axios'
 
 type Interceptors = {
   request: AxiosInterceptorManager<InternalAxiosRequestConfig>
@@ -15,7 +17,7 @@ type ResponseType<T> = {
 export class Request {
   instance: AxiosInstance
   timeout: number
-  baseURL: string = import.meta.env.VITE_BASE_URL || 'http://localhost:5000/api'
+  baseURL: string = import.meta.env.VITE_BASE_URL
   interceptors: Interceptors
 
   constructor(config: AxiosRequestConfig = {}) {
@@ -60,6 +62,14 @@ export class Request {
     // Response interceptor - Global response handling (e.g., error management)
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
+        // Centralized error handling (e.g., logging, alerting)
+        if (response.data.code && response.data.code === 401) {
+          // Handle token expiry or unauthorized errors globally
+          console.error('Unauthorized! Redirecting to login...')
+          // Optionally, you could log the user out or refresh the token here
+          
+        }
+        // return Promise.reject(response)
         // You can handle common response formatting here if needed
         return response.data
       },
