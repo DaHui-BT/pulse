@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 
@@ -12,11 +12,14 @@ import { OperationType, CollectionType } from '../entities/interaction'
 import { CommentService } from '../api/CommentService'
 import { CommentDocument, CommentAggrateDocument } from '../entities/comment'
 
+import { QuestionCircleOutlined } from '@ant-design/icons-vue'
 import Comment from '../components/Comment.vue'
+
 import { Store } from '../store'
 import { TagService } from '../api/TagService'
 import { TagDocument } from '../entities/tag'
 import { JUMP_DELAY } from '../constant'
+import { parseToc, TocType } from '../utils/parse'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +35,8 @@ const article_info = ref<ArticleDocument>()
 const user_info = ref<UserDocument>()
 const current_user = ref<UserDocument>(store.user)
 const tag_list = reactive<TagDocument[]>([])
+const preview = ref<{$el: HTMLDocument, html: string, scrollToTarget: Function}>()
+const tocs = reactive<TocType[]>([])
 let spinning = ref<boolean>(true)
 let comment_spinning = ref<boolean>(true)
 let function_spinning = ref<boolean>(true)
@@ -57,6 +62,7 @@ const comment_father_id = ref<string | null>()
 const is_stared = ref<boolean>(false)
 const is_collected = ref<boolean>(false)
 const replay_placeholder = ref<string>()
+const currentAnchor = ref<string>('')
 
 onBeforeMount(async () => {
   await article_service.findArticleById(route.query._id + '').then(res => {
@@ -72,7 +78,6 @@ onBeforeMount(async () => {
   }).catch(err => {
     throw new Error(err.message)
   })
-
   article_info.value && tagService.findTagByIds(article_info.value.tags).then(res => {
     if (res.success && res.data) {
       tag_list.splice(0, tag_list.length)
@@ -115,6 +120,26 @@ onBeforeMount(async () => {
   })
 })
 
+watch(preview, (newVal, _oldVal) => {
+  if (newVal) {
+    const prefixPath = route.fullPath
+    console.log(route.fullPath)
+    tocs.push(...parseToc(newVal.html, prefixPath))
+    console.log(parseToc(newVal.html, prefixPath))
+  }
+})
+
+function handleAnchorClick(e: MouseEvent) {
+  currentAnchor.value = (e.target as HTMLElement).getAttribute('href') || ''
+  
+  const href = (e.target as HTMLElement).getAttribute('href');
+  const params = new URLSearchParams(href || '')
+  const lineIndex = params.get('data-v-md-line')
+  const heading = preview.value?.$el.querySelector(`[data-v-md-line="${lineIndex}"]`)
+
+  heading?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
 function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[] {
   let commentAggrateList: CommentAggrateDocument[] = []
 
@@ -141,7 +166,6 @@ function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[
   combine(commentList, commentAggrateList)
   return commentAggrateList
 }
-
 
 const handleSubmit = () => {
   if (!value.value) {
@@ -334,7 +358,12 @@ const cancel = (e: MouseEvent) => {
           <a-tag :color="tag.color" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
 
-        <v-md-preview :text="article_info.content"></v-md-preview>
+        <div class="article-title-container" v-if="tocs.length > 0">
+          <a-anchor :items="tocs" :affix="false"
+                    @click.prevent="handleAnchorClick" 
+                    :get-current-anchor="() => currentAnchor" />
+        </div>
+        <v-md-preview :text="article_info.content" ref="preview" />
       </a-page-header>
 
       <!-- <a-flex class="article-detail-function" gap="20">
@@ -374,6 +403,16 @@ const cancel = (e: MouseEvent) => {
             </a-form-item>
           </template>
         </a-comment>
+
+        <a-float-button-group shape="circle" :style="{ right: '24px' }">
+          <a-float-button>
+            <template #icon>
+              <QuestionCircleOutlined />
+            </template>
+          </a-float-button>
+          <a-float-button />
+          <a-back-top :visibility-height="0" />
+        </a-float-button-group>
       </a-spin>
     </div>
     <a-empty v-else></a-empty>
@@ -388,6 +427,21 @@ const cancel = (e: MouseEvent) => {
     .ant-page-header-heading-left {
       flex-wrap: wrap;
       overflow: auto;
+    }
+
+    .article-title-container {
+      border: 1px solid #108ee9;
+      border-radius: 5px;
+      margin: 15px 0;
+      max-height: 300px;
+      overflow-x: auto;
+
+      .article-title-item {
+        
+        .article-title-href {
+          cursor: pointer;
+        }
+      }
     }
   }
 

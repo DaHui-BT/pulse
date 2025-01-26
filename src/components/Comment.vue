@@ -60,7 +60,7 @@ const fromNow = computed(() => {
       </a-tooltip>
     </template>
     <template #actions>
-      <span key="comment-basic-like">
+      <!-- <span key="comment-basic-like">
         <a-tooltip title="Like">
           <template v-if="action === 'liked'">
             <LikeFilled @click="like" />
@@ -85,7 +85,7 @@ const fromNow = computed(() => {
         <span style="padding-left: 8px; cursor: auto">
           {{ dislikes }}
         </span>
-      </span>
+      </span> -->
       <span key="comment-nested-reply-to" @click.prevent="replay(comment)">Reply to</span>
     </template>
     <template #content>
