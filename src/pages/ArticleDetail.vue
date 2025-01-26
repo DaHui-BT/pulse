@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive, onBeforeMount, watch, computed } from 'vue'
+import { ref, reactive, onBeforeMount, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 
@@ -37,6 +37,7 @@ const current_user = ref<UserDocument>(store.user)
 const tag_list = reactive<TagDocument[]>([])
 const preview = ref<{$el: HTMLDocument, html: string, scrollToTarget: Function}>()
 const tocs = reactive<TocType[]>([])
+const toc_ref = ref<HTMLElement>()
 let spinning = ref<boolean>(true)
 let comment_spinning = ref<boolean>(true)
 let function_spinning = ref<boolean>(true)
@@ -123,21 +124,51 @@ onBeforeMount(async () => {
 watch(preview, (newVal, _oldVal) => {
   if (newVal) {
     const prefixPath = route.fullPath
-    console.log(route.fullPath)
     tocs.push(...parseToc(newVal.html, prefixPath))
-    console.log(parseToc(newVal.html, prefixPath))
+    let firstChild = newVal.$el.children[0]?.firstChild as HTMLElement
+    if (firstChild) {
+      currentAnchor.value = '#' + firstChild.getAttribute('data-v-md-line')
+    }
   }
 })
 
+window.onscroll = () => {
+  const scrollTop = window.scrollY;
+  const headings = Array.from(preview.value?.$el.querySelectorAll('h1, h2, h3, h4, h5, h6') || [])
+  let currentActive = headings[0]?.getAttribute('data-v-md-line')
+
+  headings.forEach((heading) => {
+    if ((heading as HTMLElement).offsetTop <= scrollTop + 50) {
+      currentActive = '#' + heading.getAttribute('data-v-md-line')
+      // if (currentActive != '#' + headings[0]?.getAttribute('data-v-md-line')) {
+      //   // console.log(toc_ref.value.classList)
+      //   toc_ref.value?.classList.add('article-title-container--fixed')
+      // } else {
+      //   toc_ref.value?.classList.remove('article-title-container--fixed')
+      // }
+    }
+  })
+  currentAnchor.value = currentActive || ''
+}
+
+onBeforeUnmount(() => {
+  window.onscroll = null
+})
+
+const getCurrentAnchor = () => {
+  return currentAnchor.value
+}
+
 function handleAnchorClick(e: MouseEvent) {
   currentAnchor.value = (e.target as HTMLElement).getAttribute('href') || ''
+  const href = (e.target as HTMLElement).getAttribute('href') || ''
   
-  const href = (e.target as HTMLElement).getAttribute('href');
-  const params = new URLSearchParams(href || '')
-  const lineIndex = params.get('data-v-md-line')
-  const heading = preview.value?.$el.querySelector(`[data-v-md-line="${lineIndex}"]`)
+  if (href) {
+    const lineIndex = href.slice(1, href.length)
+    const heading = preview.value?.$el.querySelector(`[data-v-md-line="${lineIndex}"]`) as HTMLElement
 
-  heading?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    window.scrollTo({ top: heading.offsetTop, behavior: 'smooth'})
+  }
 }
 
 function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[] {
@@ -358,12 +389,17 @@ const cancel = (e: MouseEvent) => {
           <a-tag :color="tag.color" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
 
-        <div class="article-title-container" v-if="tocs.length > 0">
-          <a-anchor :items="tocs" :affix="false"
-                    @click.prevent="handleAnchorClick" 
-                    :get-current-anchor="() => currentAnchor" />
+        <div class="article-title-container article-title-container--fixed" 
+                    v-if="tocs.length > 0" ref="toc_ref"
+                    draggable="true" v-draggable>
+          <div class="article-title-container-handle"></div>
+          <div class="article-title-content">
+            <a-anchor :items="tocs" :affix="false"
+                      @click.prevent="handleAnchorClick" 
+                      :get-current-anchor="getCurrentAnchor" />
+          </div>
         </div>
-        <v-md-preview :text="article_info.content" ref="preview" />
+        <v-md-preview :text="article_info.content" ref="preview"/>
       </a-page-header>
 
       <!-- <a-flex class="article-detail-function" gap="20">
@@ -428,13 +464,40 @@ const cancel = (e: MouseEvent) => {
       flex-wrap: wrap;
       overflow: auto;
     }
+ 
+    .article-title-container--fixed {
+      display: relative;
+      position: fixed;
+      top: 150px;
+      right: 55px;
+    }
 
     .article-title-container {
       border: 1px solid #108ee9;
-      border-radius: 5px;
-      margin: 15px 0;
-      max-height: 300px;
-      overflow-x: auto;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      margin: 15px 0; 
+      background-color: #fff;
+      z-index: 3;
+      transform: translate(0);
+
+      .article-title-container-handle {
+        height: 20px;
+        width: 100%;
+        background: url('../assets/handle.png');
+        background-color: rgba(238, 238, 238, 0.171);
+        background-repeat: repeat-x;
+        background-size: 20px;
+
+        &:hover {
+          cursor: move;
+        }
+      }
+
+      .article-title-content {
+        max-height: 280px;
+        overflow-x: auto;
+      }
 
       .article-title-item {
         

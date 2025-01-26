@@ -23,6 +23,7 @@
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
+    "@types/codemirror": "^5.60.15",
     "@types/node": "^22.7.7",
     "@vitejs/plugin-vue": "^5.1.4",
     "sass-embedded": "^1.80.3",

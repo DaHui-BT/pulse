@@ -50,8 +50,10 @@ export const parseToc = (htmlContent: string, prefixPath: string): TocType[] => 
     const item = {
       key: key ++,
       title: heading.textContent,
+      href: '#' + heading.getAttribute('data-v-md-line'),
+      // href: '#' + heading.textContent,`
       // href: '#' + prefixPath + '#/' + heading.textContent,
-      href: prefixPath + `${prefixPath.includes('?') ? '&' : '?'}data-v-md-line=` + heading.getAttribute('data-v-md-line'),
+      // href: prefixPath + `${prefixPath.includes('?') ? '&' : '?'}data-v-md-line=` + heading.getAttribute('data-v-md-line'),
       lineIndex: heading.getAttribute('data-v-md-line'),
       children: [],
     };
