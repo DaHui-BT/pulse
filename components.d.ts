@@ -63,6 +63,7 @@ declare module 'vue' {
     Glassmorphism: typeof import('./src/components/Glassmorphism.vue')['default']
     MaskWrapper: typeof import('./src/components/MaskWrapper.vue')['default']
     NavBar: typeof import('./src/components/NavBar.vue')['default']
+    Removable: typeof import('./src/components/Removable.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TimeLine: typeof import('./src/components/TimeLine.vue')['default']

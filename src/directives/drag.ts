@@ -2,7 +2,6 @@ import { DirectiveBinding, VNode } from "vue"
 
 const Drag = {
   mounted(el: HTMLElement, binding: DirectiveBinding, vnode: VNode) {
-    console.log(el)
     let offsetX = 0, offsetY = 0, draggable = false, cursor = el.style.cursor
     let width = 0, height = 0
 

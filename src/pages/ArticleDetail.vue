@@ -13,7 +13,6 @@ import { CommentService } from '../api/CommentService'
 import { CommentDocument, CommentAggrateDocument } from '../entities/comment'
 
 import { QuestionCircleOutlined } from '@ant-design/icons-vue'
-import Comment from '../components/Comment.vue'
 
 import { Store } from '../store'
 import { TagService } from '../api/TagService'
@@ -37,7 +36,6 @@ const current_user = ref<UserDocument>(store.user)
 const tag_list = reactive<TagDocument[]>([])
 const preview = ref<{$el: HTMLDocument, html: string, scrollToTarget: Function}>()
 const tocs = reactive<TocType[]>([])
-const toc_ref = ref<HTMLElement>()
 let spinning = ref<boolean>(true)
 let comment_spinning = ref<boolean>(true)
 let function_spinning = ref<boolean>(true)
@@ -389,7 +387,12 @@ const cancel = (e: MouseEvent) => {
           <a-tag :color="tag.color" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
 
-        <div class="article-title-container article-title-container--fixed" 
+        <Removable v-if="tocs.length > 0">
+          <a-anchor :items="tocs" :affix="false"
+                      @click.prevent="handleAnchorClick" 
+                      :get-current-anchor="getCurrentAnchor" />
+        </Removable>
+        <!-- <div class="article-title-container article-title-container--fixed" 
                     v-if="tocs.length > 0" ref="toc_ref"
                     draggable="true" v-draggable>
           <div class="article-title-container-handle"></div>
@@ -398,7 +401,7 @@ const cancel = (e: MouseEvent) => {
                       @click.prevent="handleAnchorClick" 
                       :get-current-anchor="getCurrentAnchor" />
           </div>
-        </div>
+        </div> -->
         <v-md-preview :text="article_info.content" ref="preview"/>
       </a-page-header>
 
