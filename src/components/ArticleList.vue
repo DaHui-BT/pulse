@@ -51,6 +51,8 @@ const onLoadMore = () => {
         <a-list-item key="item.title">
         <template #extra v-if="!loading">
           <a-flex :gap="20">
+            <a-tag color="cyan" v-if="item.public">Public</a-tag>
+            <a-tag color="blue" v-else>Private</a-tag>
             <a key="list-loadmore-edit" :href="`#/publish?_id=${item._id}`">edit</a>
             <!-- <a key="list-loadmore-more">more</a> -->
           </a-flex>

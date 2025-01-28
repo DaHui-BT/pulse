@@ -11,6 +11,7 @@ type ArticleDocument = {
   title: string,
   description: string,
   content: string,
+  public: boolean,
   status: number, // 0 indicate can be viewd, 1 indicate private, 2 indicate deleted
   tags: string[],
   tagList?: TagDocument[],

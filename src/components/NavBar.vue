@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { SearchOutlined } from '@ant-design/icons-vue'
+
 
 type NavBarType = {label: string, key: string, name: string, path: string}
 
@@ -8,7 +10,9 @@ const route = useRoute()
 const router = useRouter()
 let show_menu_collpase = ref<boolean>(window.innerWidth <= 400)
 const current_path = ref<string[]>([])
-const search_value = ref<string>('')
+const formState = reactive({
+  search: ''
+})
 
 const navbar_list = reactive<NavBarType[]>([{
   label: 'Article',
@@ -61,7 +65,7 @@ onMounted(() => {
     path = route.name.toString()
     search = route.query.search + ''
   }
-  search_value.value = search
+  formState.search = search
   current_path.value.push(path)
 })
 
@@ -74,18 +78,10 @@ function handleClick({key}: {key: string}) {
 }
 
 function onSearch() {
-  // if (router.currentRoute.value.name == 'Article') {
-  //   router.replace({
-  //     name: 'Article',
-  //     query: {search: search_value.value}
-  //   })
-  //   location.reload()
-  //   return
-  // }
   router.push({
-    name: 'Article',
+    path: '/article',
     query: {
-      search: search_value.value
+      search: formState.search
     }
   })
 }
@@ -96,12 +92,18 @@ function onSearch() {
     <a-flex class="nav-bar-content" justify="space-between" align="center">
       <router-link to="/home" @click="handleClick({key: 'Home'})"><i class="iconfont nav-bar-logo">&#xe70f;</i></router-link>
       
-      <a-input-search
-        v-model:value="search_value"
-        placeholder="input search text"
-        style="width: 200px"
-        @search="onSearch"/>
-
+      <a-form layout="inline" @finish="onSearch" :model="formState">
+        <a-form-item>
+          <a-input
+            v-model:value="formState.search"
+            placeholder="input search text"
+            style="width: 220px"/>
+        </a-form-item>
+        <a-form-item>
+          <a-button html-type="submit" shape="circle" type="primary" :icon="h(SearchOutlined)" />
+        </a-form-item>
+      </a-form>
+      
       <a-dropdown v-if="show_menu_collpase">
         <a @click.prevent>
           <i class="iconfont menu-icon">&#xe638;</i>

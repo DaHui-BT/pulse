@@ -16,19 +16,20 @@
 }
 
 /* 滚动条宽度 */
-div::-webkit-scrollbar {
-  width: 6px;
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 /* 滚动条轨道 */
-div::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: rgb(239, 239, 239);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 /* 小滑块 */
-div::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: #40a0ff29;
-  border-radius: 10px;
+  border-radius: 3px;
 }
-div::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: #40a0ff;
 }

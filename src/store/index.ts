@@ -8,18 +8,19 @@ export const Store = defineStore('Store', {
     accessToken: localStorage.getItem('accessToken') || '',  // Load token from localStorage if available
     refreshToken: localStorage.getItem('refreshToken') || '', // Optional: for refresh tokens
     user: JSON.parse(localStorage.getItem('user') || '{}'), // Load user data if available
-    tokenExpiration: localStorage.getItem('tokenExpiration') || null,  // Token expiry timestamp
+    tokenExpiration: parseInt(localStorage.getItem('tokenExpiration') || ''),  // Token expiry timestamp
     loading: false, // Flag for loading state
     error: null,    // Flag for error messages
   }),
 
   actions: {
     // Save data to Pinia state and localStorage
-    setAccessToken(token: string, expiration: string) {
+    setAccessToken(token: string, refreshToken: string, expiration: number) {
       this.accessToken = token
       this.tokenExpiration = expiration
       localStorage.setItem('accessToken', token)
-      localStorage.setItem('tokenExpiration', expiration)
+      localStorage.setItem('refreshToken', refreshToken)
+      localStorage.setItem('tokenExpiration', expiration + '')
     },
     
     setRefreshToken(refreshToken: string) {
@@ -36,7 +37,7 @@ export const Store = defineStore('Store', {
       this.accessToken = ''
       this.refreshToken = ''
       this.user = {}
-      this.tokenExpiration = null
+      this.tokenExpiration = 0
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('user')
@@ -49,18 +50,19 @@ export const Store = defineStore('Store', {
     },
 
     // Update the error state
-    setError(error: string | null) {
-      this.error = error
-    }
+    // setError(error: string | null) {
+    //   this.error = error
+    // }
   },
 
   getters: {
+    // TODO logic should be update
     isAuthenticated(): boolean {
-      return !!this.accessToken && this.tokenExpiration && new Date().getTime() < Number(this.tokenExpiration)
+      return !!this.accessToken && !!this.tokenExpiration && Date.now() < this.tokenExpiration
     },
 
     isTokenExpired(): boolean {
-      return this.tokenExpiration ? new Date().getTime() > Number(this.tokenExpiration) : true
+      return this.tokenExpiration ? Date.now() > this.tokenExpiration : false
     }
   }
 })

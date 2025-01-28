@@ -45,7 +45,8 @@ const article = ref<ArticleDocument>({
   title: '',
   description: '',
   content: '',
-  status: ArticleStatus.PRIVATE,
+  public: false,
+  status: 0,
   statistics: {
     views: 0,
     stars: 0,
@@ -79,7 +80,7 @@ onMounted(() => {
         }
         formState.title = res.data.title
         formState.tag_list = res.data.tags
-        formState.isPublic = res.data.status === ArticleStatus.PUBLIC
+        formState.isPublic = res.data.public
         formState.description = res.data.description
         formState.content = res.data.content
         formState._id = res.data._id
@@ -124,7 +125,7 @@ async function onFinish(values: FormState) {
   article.value.title = values.title
   article.value.description = values.description
   article.value.content = values.content
-  article.value.status = values.isPublic ? 0 : 1
+  article.value.public = values.isPublic
   article.value.tags = values.tag_list
   if (isEdit.value) {
     if (!formState._id) {

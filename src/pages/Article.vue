@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { type ArticleDocument } from '../entities/article'
 import { ArticleService } from '../api/ArticleService'
 
-import ContentCard from '../components/ContentCard.vue'
 import Constant from '../constant'
 import { useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
@@ -27,8 +26,8 @@ async function loadData(filter: Partial<ArticleDocument> = {}) {
       message.error(res.error)
     } else {
       let articles = res.data?.articles || []
-      article_list.splice(0, articles.length)
-      article_list.push(...(res.data?.articles || []))
+      article_list.splice(0, article_list.length)
+      article_list.push(...(articles || []))
       total_page.value = res.data?.total == undefined ? 0 : res.data.total
     }
     spinning.value = false
@@ -47,6 +46,17 @@ onMounted(() => {
   tagService.findAllTags().then(res => {
     tag_list.push(...(res.data || []))
   })
+})
+
+// when query string change, reload data
+watch(route, (newVal) => {
+  if (newVal.query.search && newVal.query.search.length > 0) {
+    let search_value: string = newVal.query.search + ''
+    
+    loadData({title: search_value })
+  } else {
+    loadData()
+  }
 })
 
 function changePage(page_number: number) {

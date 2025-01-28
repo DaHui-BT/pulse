@@ -67,7 +67,7 @@ export class Request {
           // Handle token expiry or unauthorized errors globally
           console.error('Unauthorized! Redirecting to login...')
           // Optionally, you could log the user out or refresh the token here
-          
+          localStorage.removeItem('token')
         }
         // return Promise.reject(response)
         // You can handle common response formatting here if needed
@@ -79,6 +79,7 @@ export class Request {
           // Handle token expiry or unauthorized errors globally
           console.error('Unauthorized! Redirecting to login...')
           // Optionally, you could log the user out or refresh the token here
+          localStorage.removeItem('token')
         }
         return Promise.reject(error)
       }

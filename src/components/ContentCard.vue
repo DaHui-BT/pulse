@@ -48,7 +48,7 @@ onMounted(() => {
                            :href="`#/article-detail?_id=${content._id}`"
                            ellipsis :content="content.title"></a-typography-link>
         <div class="info-tag-container" v-if="current_tag_list.length > 0">
-          <a-tag :color="tag.color" v-for="tag in current_tag_list" :key="tag._id">{{ tag.name }}</a-tag>
+          <a-tag color="#2db7f5" v-for="tag in current_tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </div>
       </a-flex>
     </template>

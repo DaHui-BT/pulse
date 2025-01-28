@@ -5,7 +5,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { JUMP_DELAY } from '../constant'
 import { UserService } from '../api/UserService'
-import Glassmorphism from '../components/Glassmorphism.vue'
 import Loading from '../plugins/loading'
 
 

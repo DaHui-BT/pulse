@@ -384,10 +384,10 @@ const cancel = (e: MouseEvent) => {
         </template>
 
         <template #tags>
-          <a-tag :color="tag.color" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
+          <a-tag color="#2db7f5" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
 
-        <Removable v-if="tocs.length > 0">
+        <Removable v-if="tocs.length > 0" height="280px" top="150px" right="55px">
           <a-anchor :items="tocs" :affix="false"
                       @click.prevent="handleAnchorClick" 
                       :get-current-anchor="getCurrentAnchor" />
@@ -443,15 +443,17 @@ const cancel = (e: MouseEvent) => {
           </template>
         </a-comment>
 
-        <a-float-button-group shape="circle" :style="{ right: '24px' }">
-          <a-float-button>
-            <template #icon>
-              <QuestionCircleOutlined />
-            </template>
-          </a-float-button>
-          <a-float-button />
-          <a-back-top :visibility-height="0" />
-        </a-float-button-group>
+        <!-- <Removable right="24px" bottom="20px"> -->
+          <a-float-button-group shape="circle" :style="{ right: '24px' }">
+            <a-float-button>
+              <template #icon>
+                <QuestionCircleOutlined />
+              </template>
+            </a-float-button>
+            <a-float-button />
+            <a-back-top :visibility-height="0" />
+          </a-float-button-group>
+        <!-- </Removable> -->
       </a-spin>
     </div>
     <a-empty v-else></a-empty>

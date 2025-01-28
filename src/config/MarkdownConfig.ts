@@ -32,6 +32,9 @@ import 'codemirror/lib/codemirror.css';
 import VMdPreview from '@kangc/v-md-editor/lib/preview';
 import '@kangc/v-md-editor/lib/style/preview-html.css';
 
+// code copy
+import createCopyCodePlugin from '@kangc/v-md-editor/lib/plugins/copy-code/index';
+
 VMdEditor.Codemirror = Codemirror;
 VMdEditor.use(githubTheme, {
   Hljs: hljs,
@@ -39,7 +42,8 @@ VMdEditor.use(githubTheme, {
 
 VMdPreview.use(githubTheme, {
   Hljs: hljs,
-});
+})
+VMdPreview.use(createCopyCodePlugin())
 
 export {
   VMdEditor,

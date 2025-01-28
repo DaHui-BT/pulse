@@ -1,7 +1,7 @@
 import { createWebHashHistory, createRouter } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { JUMP_DELAY } from '../constant'
-import { AuthorizationService } from '../services/AuthorizationService'
+// import { AuthorizationService } from '../services/AuthorizationService'
 
 import { message } from 'ant-design-vue'
 import { Store } from '../store'
@@ -33,7 +33,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
     name: 'Article',
     component: () => import('../pages/Article.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       showNavbar: true,
       needContainer: true
     }
@@ -42,7 +42,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
     name: 'ArticleDetail',
     component: () => import('../pages/ArticleDetail.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       showNavbar: true,
       needContainer: true
     }
@@ -121,7 +121,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     // judge is login or not
     const store = Store()
-    if (!store.isTokenExpired) {
+    if (store.isAuthenticated) {
       next()
     } else {
       message.warning('Have not login, login first')

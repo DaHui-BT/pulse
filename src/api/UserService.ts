@@ -6,6 +6,8 @@ import { Store } from '../store/index'
 import { AxiosRequestConfig } from "axios"
 
 
+type LoginResponse = {user: UserDocument, token: string, refreshToken: string, expiration: number}
+
 class UserService {
   private static instance: UserService
   private request: Request
@@ -25,10 +27,10 @@ class UserService {
 
   public async login(username: string, password: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.put<{user: UserDocument, token: string, expiration: number}>('/user/login', {data: {username, password}})
+      const response = await this.request.put<LoginResponse>('/user/login', {data: {username, password}})
 
       if (response.code == 200) {
-        this.store.setAccessToken(response.data.token, response.data.expiration + '')
+        this.store.setAccessToken(response.data.token, response.data.refreshToken, response.data.expiration)
         this.store.setUser(response.data.user)
         return { success: true }
       } else {
