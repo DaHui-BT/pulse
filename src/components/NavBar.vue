@@ -97,7 +97,7 @@ function onSearch() {
           <a-input
             v-model:value="formState.search"
             placeholder="input search text"
-            style="width: 220px"/>
+            style="width: 200px"/>
         </a-form-item>
         <a-form-item>
           <a-button html-type="submit" shape="circle" type="primary" :icon="h(SearchOutlined)" />
@@ -164,5 +164,9 @@ function onSearch() {
   .nav-bar-fake {
     height: var(--navbar-height);
   }
+}
+
+:where(.css-dev-only-do-not-override-17yhhjv).ant-form-inline .ant-form-item {
+  margin-inline-end: 2px;
 }
 </style>
