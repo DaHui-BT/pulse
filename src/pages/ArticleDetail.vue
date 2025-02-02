@@ -37,7 +37,7 @@ const tag_list = reactive<TagDocument[]>([])
 const preview = ref<{$el: HTMLDocument, html: string, scrollToTarget: Function}>()
 const tocs = reactive<TocType[]>([])
 let spinning = ref<boolean>(true)
-let comment_spinning = ref<boolean>(true)
+let comment_spinning = ref<boolean>(false)
 let function_spinning = ref<boolean>(true)
 
 const routes = reactive<{path: string, breadcrumbName: string}[]>([
@@ -92,31 +92,33 @@ onBeforeMount(async () => {
     }
   })
 
-  interaction_service.findInteractions({createdBy: store.user._id,
-                                        documentId: article_info.value?._id,
-                                        collectionName: CollectionType.ARTICLE}).then(res => {
-    if (res.success) {
-      res.data?.interactions.forEach(interaction => {
-        if (interaction.operation == OperationType.STAR) {
-          is_stared.value = true
-        } else if (interaction.operation == OperationType.COLLECT) {
-          is_collected.value = true
-        }
-      })
-    } else {
-      message.error(res.error)
-    }
-    function_spinning.value = false
-  })
+  if (store.isAuthenticated) {
+    interaction_service.findInteractions({createdBy: store.user._id,
+                                          documentId: article_info.value?._id,
+                                          collectionName: CollectionType.ARTICLE}).then(res => {
+      if (res.success) {
+        res.data?.interactions.forEach(interaction => {
+          if (interaction.operation == OperationType.STAR) {
+            is_stared.value = true
+          } else if (interaction.operation == OperationType.COLLECT) {
+            is_collected.value = true
+          }
+        })
+      } else {
+        message.error(res.error)
+      }
+      function_spinning.value = false
+    })
 
-  article_info.value && comment_service.findComments({article: article_info.value._id}).then(res => {
-    if (res.success) {
-      comment_aggrate_list.push(...commentCombine(res.data?.comments || []))
-      comment_spinning.value = false
-    } else {
-      message.error(res.error)
-    }
-  })
+    article_info.value && comment_service.findComments({article: article_info.value._id}).then(res => {
+      if (res.success) {
+        comment_aggrate_list.push(...commentCombine(res.data?.comments || []))
+        comment_spinning.value = false
+      } else {
+        message.error(res.error)
+      }
+    })
+  }
 })
 
 watch(preview, (newVal, _oldVal) => {
@@ -433,12 +435,19 @@ const cancel = (e: MouseEvent) => {
               <a-typography-text type="secondary" class="close" @click="closePlaceholder">x</a-typography-text>
             </div>
             <a-form-item>
-              <a-textarea v-model:value="value" :rows="4" placeholder="input your comment" ref="comment_input" />
+              <a-textarea v-model:value="value" :rows="4"
+                          placeholder="input your comment" ref="comment_input"
+                          :disabled="!store.isAuthenticated" />
             </a-form-item>
             <a-form-item>
-              <a-button html-type="submit" :loading="submitting" type="primary" @click="handleSubmit">
-                Add Comment
-              </a-button>
+              
+              <a-tooltip :title="store.isAuthenticated ? 'comment' : 'login for comment'">
+                <a-button html-type="submit" :loading="submitting"
+                          type="primary" @click="handleSubmit"
+                          :disabled="!store.isAuthenticated">
+                  Add Comment
+                </a-button>
+              </a-tooltip>
             </a-form-item>
           </template>
         </a-comment>
