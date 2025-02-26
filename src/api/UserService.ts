@@ -2,7 +2,7 @@ import { UserDocument } from "../entities/user"
 import { fileToBinary, compressImage } from "../tools/image_tools"
 import { Request } from "../tools/request"
 import { PaginationOptions, ServiceResponse } from "../types/realm"
-import { Store } from '../store/index'
+import { useAuthStore } from '../store/index'
 import { AxiosRequestConfig } from "axios"
 
 
@@ -15,7 +15,7 @@ class UserService {
 
   private constructor() {
     this.request = new Request()
-    this.store = Store()
+    this.store = useAuthStore()
   }
 
   public static getInstance(): UserService {
@@ -27,7 +27,7 @@ class UserService {
 
   public async login(username: string, password: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.put<LoginResponse>('/user/login', {data: {username, password}})
+      const response = await this.request.post<LoginResponse>('/login', {data: {username, password}})
 
       if (response.code == 200) {
         this.store.setAccessToken(response.data.token, response.data.refreshToken, response.data.expiration)
@@ -43,7 +43,7 @@ class UserService {
 
   async register(username: string, email: string, password: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.post('/user', {
+      const response = await this.request.post('/register', {
         data: {
           email: email,
           username: username,
@@ -89,20 +89,20 @@ class UserService {
   
   async sendResetPasswordEmail(email: string): Promise<ServiceResponse<void>> {
     try {
-      // const user = await this.request.sendResetPasswordEmail(email)
-      // return { success: true, data: user }
+      const isReset = await this.request.get(`/reset-password/${email}`)
+      if (isReset) {
+        return { success: true }
+      } else {
+        return { success: false }
+      }
     } catch (error: any) {
       return { success: false, error: error.message }
     }
   }
   
-  public getCurrentUser(): UserDocument {
-    return null
-  }
-
   public async findUserById(userId: string): Promise<ServiceResponse<UserDocument>> {
     try {
-      const response = await this.request.get<UserDocument>(`/user/${userId}`)
+      const response = await this.request.get<UserDocument>(`/user/info/${userId}`, { headers: { Authorization: this.store.accessToken }})
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {
@@ -128,7 +128,7 @@ class UserService {
   
   public async existUserByUsername(username: string, options: AxiosRequestConfig = {}): Promise<ServiceResponse<UserDocument>> {
     try {
-      const response = await this.request.get<UserDocument>(`/user/exist/${username}`, options)
+      const response = await this.request.get<UserDocument>(`/user/exist-username/${username}`, options)
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {
@@ -195,7 +195,7 @@ class UserService {
     try {
       const response = await this.request.put<UserDocument>(`/user/${userId}`, { data: userData })
       if (response.code == 200) {
-        return { success: true, data: response.data }
+        return { success: true, data: response.data, message: response.message }
       } else {
         return { success: false, error: response.message }
       }

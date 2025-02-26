@@ -45,7 +45,7 @@ class TagService {
   
   public async findAllTags(): Promise<ServiceResponse<TagDocument[]>> {
     try {
-      const response = await this.request.get<TagDocument[]>('/tag')
+      const response = await this.request.get<TagDocument[]>('/tag-all')
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {

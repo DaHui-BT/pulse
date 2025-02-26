@@ -3,15 +3,20 @@ import { onMounted, reactive, ref } from 'vue'
 import moment from 'moment'
 import { InteractionService } from '../api/InteractionService'
 import { InteractionDocument, OperationType } from '../entities/interaction'
-import { Store } from '../store'
+import { useAuthStore } from '../store'
+import PaginationType from '../types/pagination'
 
-const store = Store()
+const store = useAuthStore()
 const interaction_list = reactive<InteractionDocument[]>([])
 const interactionService = InteractionService.getInstance()
+const pagination = reactive<PaginationType>({
+  current: 1,
+  size: 3,
+  total: 0
+})
 
 const initLoading = ref<boolean>(false)
 const showLoadingButton = ref<boolean>(false)
-const current_page = ref<number>(0)
 
 onMounted(() => {
   loadData(true)
@@ -19,14 +24,19 @@ onMounted(() => {
 
 function loadData(isClear: boolean = false) {
   initLoading.value = true
-  interactionService.findInteractions({createdBy:  store.user._id}).then(res => {
+  interactionService.findInteractions({createdBy:  store.user._id,
+                                        current: pagination.current, size: pagination.size}).then(res => {
     isClear && interaction_list.splice(0, interaction_list.length)
     interaction_list.push(...(res.data?.interactions || []))
-    initLoading.value = false
-    if (res.data && (res.data?.total * res.data.interactions.length == interaction_list.length)) {
-      showLoadingButton.value = false
-    } else {
-      showLoadingButton.value = true
+    if (res.data?.pagination) {
+      pagination.current = res.data.pagination.current
+      pagination.size = res.data.pagination.size
+      pagination.total = res.data.pagination.total
+      if (res.data.pagination.total == interaction_list.length) {
+        showLoadingButton.value = false
+      } else {
+        showLoadingButton.value = true
+      }
     }
     initLoading.value = false
   })
@@ -34,7 +44,7 @@ function loadData(isClear: boolean = false) {
 
 function onLoadMore() {
   initLoading.value = true
-  current_page.value = current_page.value + 1
+  pagination.current = pagination.current + 1
   loadData()
 }
 
@@ -89,8 +99,8 @@ function operateType(operate: OperationType) {
 <style lang="scss" scoped>
 .time-line {
   padding: 20px;
-  max-height: 300px;
-  overflow-x: auto;
+  /* max-height: 300px; */
+  /* overflow-x: auto; */
 
   .interaction-text {
     margin-left: 20px;

@@ -1,68 +1,63 @@
 // store/authStore.ts
-
 import { defineStore } from 'pinia'
 import { UserDocument } from '../entities/user'
+import { TagDocument } from '../entities/tag'
 
-export const Store = defineStore('Store', {
+export const useAuthStore = defineStore('auth', {
   state: () => ({
-    accessToken: localStorage.getItem('accessToken') || '',  // Load token from localStorage if available
-    refreshToken: localStorage.getItem('refreshToken') || '', // Optional: for refresh tokens
-    user: JSON.parse(localStorage.getItem('user') || '{}'), // Load user data if available
-    tokenExpiration: parseInt(localStorage.getItem('tokenExpiration') || ''),  // Token expiry timestamp
-    loading: false, // Flag for loading state
-    error: null,    // Flag for error messages
+    accessToken: '',
+    refreshToken: '',
+    user: {} as UserDocument,
+    tags: {} as TagDocument[]
   }),
-
   actions: {
-    // Save data to Pinia state and localStorage
-    setAccessToken(token: string, refreshToken: string, expiration: number) {
+    setAccessToken(token: string) {
       this.accessToken = token
-      this.tokenExpiration = expiration
-      localStorage.setItem('accessToken', token)
-      localStorage.setItem('refreshToken', refreshToken)
-      localStorage.setItem('tokenExpiration', expiration + '')
     },
-    
     setRefreshToken(refreshToken: string) {
       this.refreshToken = refreshToken
-      localStorage.setItem('refreshToken', refreshToken)
     },
-    
     setUser(userData: UserDocument) {
       this.user = userData
-      localStorage.setItem('user', JSON.stringify(userData))
     },
-    
+    removeAccessToken() {
+      this.accessToken = ''
+    },
+    removeRefreshToken() {
+      this.refreshToken = ''
+    },
+    removeUser() {
+      this.user = {} as UserDocument
+    },
+    login(token: string, refreshToken: string, user: UserDocument) {
+      this.accessToken = token
+      this.refreshToken = refreshToken
+      this.user = user
+    },
     logout() {
       this.accessToken = ''
       this.refreshToken = ''
-      this.user = {}
-      this.tokenExpiration = 0
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('user')
-      localStorage.removeItem('tokenExpiration')
+      this.user = {} as UserDocument
     },
-
-    // Update the loading state
-    setLoading(isLoading: boolean) {
-      this.loading = isLoading
+    setTagList(tagList: TagDocument[]) {
+      this.tags = tagList
     },
-
-    // Update the error state
-    // setError(error: string | null) {
-    //   this.error = error
-    // }
+    getExpireTime(token: string): Date {
+      let payload = token.split('.')[1]
+      payload = atob(payload)
+      const exp = parseInt(JSON.parse(payload).exp) * 1000
+      return new Date(exp)
+    }
   },
 
   getters: {
-    // TODO logic should be update
     isAuthenticated(): boolean {
-      return !!this.accessToken && !!this.tokenExpiration && Date.now() < this.tokenExpiration
-    },
-
-    isTokenExpired(): boolean {
-      return this.tokenExpiration ? Date.now() > this.tokenExpiration : false
+      return !!this.accessToken || !!this.refreshToken
     }
+  },
+
+  persist: {
+    key: 'auth',
+    storage: localStorage
   }
 })

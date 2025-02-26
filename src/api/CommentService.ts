@@ -1,5 +1,6 @@
 import { CommentDocument } from "../entities/comment"
 import { Request } from "../tools/request"
+import PaginationType from "../types/pagination"
 import { ObjectId, PaginationOptions, ServiceResponse } from "../types/realm"
 
 class CommentService {
@@ -33,12 +34,37 @@ class CommentService {
   
   public async findComments(
     filter: Partial<CommentDocument> = {},
-    pagination: PaginationOptions = {page: 0, pageSize: 10}
-  ): Promise<ServiceResponse<{ comments: CommentDocument[], total: number }>> {
+    pagination: Partial<PaginationType> = {current: 1, size: 10}
+  ): Promise<ServiceResponse<{ comments: CommentDocument[], pagination: PaginationType }>> {
     try {
-      const response = await this.request.get<CommentDocument[]>('/comment', {params: filter})
+      const response = await this.request.get<{data: CommentDocument[], pagination: PaginationType}>('/comment', {params: {...filter, ...pagination}})
       if (response.code == 200) {
-        return { success: true, data: { comments: response.data, total: 1 }}
+        return { success: true, data: { comments: response.data.data, pagination: response.data.pagination }}
+      }
+      return { success: false, error: response.message }
+      // const [comments, total] = await Promise.all([
+      //   this.request.find<CommentDocument>(this.collection, filter, pagination),
+      //   this.request.count<CommentDocument>(this.collection, filter)
+      // ])
+
+      // return { 
+      //   success: true, 
+      //   data: { comments, total } 
+      // }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  public async findChildComments(filter: Partial<CommentDocument>, pagination: Partial<PaginationType> = {current: 1, size: 10}
+  ): Promise<ServiceResponse<{ comments: CommentDocument[], pagination: PaginationType }>> {
+    try {
+      const response = await this.request.get<{
+                                                data: CommentDocument[],
+                                                pagination: PaginationType
+                                              }>(`/comment/child`, {params: {...filter, ...pagination}})
+      if (response.code == 200) {
+        return { success: true, data: { comments: response.data.data, pagination: response.data.pagination }}
       }
       return { success: false, error: response.message }
       // const [comments, total] = await Promise.all([
@@ -75,6 +101,40 @@ class CommentService {
   ): Promise<ServiceResponse<CommentDocument>> {
     try {
       const response = await this.request.put<CommentDocument>(`/comment/${commentId}`, {data: commentData})
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      }
+      return { success: false, error: response.message }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async like(commentId: string, count: 1 | -1): Promise<ServiceResponse<CommentDocument>> {
+    try {
+      let response = null
+      if (count === 1) {
+        response = await this.request.put<CommentDocument>(`/comment/like/${commentId}`)
+      } else {
+        response = await this.request.put<CommentDocument>(`/comment/cancel-like/${commentId}`)
+      }
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      }
+      return { success: false, error: response.message }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async dislike(commentId: string, count: -1 | 1): Promise<ServiceResponse<CommentDocument>> {
+    try {
+      let response = null
+      if (count === 1) {
+        response = await this.request.put<CommentDocument>(`/comment/dislike/${commentId}`)
+      } else {
+        response = await this.request.put<CommentDocument>(`/comment/cancel-dislike/${commentId}`)
+      }
       if (response.code == 200) {
         return { success: true, data: response.data }
       }

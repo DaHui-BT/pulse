@@ -17,21 +17,21 @@ interface UserDocument {
   roles: string[],
   isActive: boolean,
   profile: {
-    firstName: string,
-    lastName: string,
+    // firstName: string,
+    // lastName: string,
     location: {
       province: string,
       city: string
     },
-    website: string,
-    social: {
-      twitter: string,
-      github: string,
-      linkedin: string
+    website?: string,
+    social?: {
+      twitter?: string,
+      github?: string,
+      linkedin?: string
     },
-    preferences: {
-      emailNotification: boolean,
-      darkMode: boolean
+    preferences?: {
+      emailNotification?: boolean,
+      darkMode?: boolean
     }
   },
   subscribers: string[],  // References to User._id

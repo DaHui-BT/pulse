@@ -4,18 +4,18 @@ import { message, Modal } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 
-import { UserService } from '../api/UserService'
-import { FileService } from '../api/FileService'
+import { UserService } from '../../api/UserService'
+import { FileService } from '../../api/FileService'
 
-import EditForm from '../components/EditForm.vue'
-import TimeLine from '../components/TimeLine.vue'
-import ArticleList from '../components/ArticleList.vue'
-import { UserDocument } from '../entities/user'
-import Loading from '../plugins/loading'
-import { Store } from '../store'
+import EditForm from './components/editform/index.vue'
+import TimeLine from '../../components/TimeLine.vue'
+import ArticleList from '../../components/ArticleList.vue'
+import { UserDocument } from '../../entities/user'
+import Loading from '../../plugins/loading'
+import { useAuthStore } from '../../store'
 
 
-const store = Store()
+const store = useAuthStore()
 const router = useRouter()
 const userService = UserService.getInstance()
 const fileService = FileService.getInstance()
@@ -27,6 +27,7 @@ const isShowArticleManager = ref<boolean>(false)
 
 Loading.show()
 userService.findUserById(store.user._id).then(res => {
+  console.log(res)
   if (res.success) {
     user_info.value = res.data
     res.data && store.setUser(res.data)

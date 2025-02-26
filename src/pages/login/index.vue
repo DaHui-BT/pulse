@@ -3,9 +3,9 @@ import { reactive, computed } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { JUMP_DELAY } from '../constant'
-import { UserService } from '../api/UserService'
-import Loading from '../plugins/loading'
+import { JUMP_DELAY } from '../../constant'
+import AuthService from '../../api/auth.service'
+import Loading from '../../plugins/loading'
 
 
 type FormState = {
@@ -15,7 +15,7 @@ type FormState = {
 }
 const router = useRouter()
 const route = useRoute()
-const userService = UserService.getInstance()
+const authService = AuthService.getInstance()
 const formState = reactive<FormState>({
   username: '',
   password: '',
@@ -24,7 +24,7 @@ const formState = reactive<FormState>({
 
 const onFinish = (values: FormState) => {
   Loading.show()
-  userService.login(values.username, values.password).then((res) => {
+  authService.login(values.username, values.password).then((res) => {
     if (res.success) {
       message.success('login successfully')
       let to_path = '/'

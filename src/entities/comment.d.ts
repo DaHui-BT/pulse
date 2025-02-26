@@ -1,39 +1,43 @@
+import PaginationType from '../types/pagination'
 import { BaseDocument } from './base'
 
 type CommentDocument = {
   _id?: string,
   content: string,
-  createdBy: string,
-  author?: {
+  // createdBy: string,
+  author: {
     userId: string,         // Reference to User._id
     username: string,
-    avatar: string
+    avatar?: string
   },
   article: string,           // Reference to Article._id
-  parentComment: string,     // Reference to Comment._id (for nested comments)
-  like: number,
-  dislike: number,
-  createdAt: Date,
-  updatedAt: Date,
-  isDeleted: Boolean
+  parentComment?: string | null,     // Reference to Comment._id (for nested comments)
+  childrenLen: number,
+  like?: number,
+  dislike?: number,
+  createdAt?: Date,
+  updatedAt?: Date,
+  isDeleted?: Boolean
 }
 
 type CommentAggrateDocument = {
   _id?: string,
   content: string,
-  author?: {
+  author: {
     userId: string,         // Reference to User._id
     username: string,
-    avatar: string
+    avatar?: string
   },
   article: string,           // Reference to Article._id
-  parentComment: string,     // Reference to Comment._id (for nested comments)
-  like: number,
-  dislike: number,
+  parentComment?: string | null,     // Reference to Comment._id (for nested comments)
+  like?: number,
+  dislike?: number,
   children: CommentAggrateDocument[],
-  createdAt: Date,
-  updatedAt: Date,
-  isDeleted: Boolean
+  childrenLen: number,
+  // pagination: PaginationType,
+  createdAt?: Date,
+  updatedAt?: Date,
+  isDeleted?: Boolean
 }
 
 export {

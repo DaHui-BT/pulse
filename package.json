@@ -9,22 +9,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.0",
     "@kangc/v-md-editor": "^2.3.18",
     "@wangeditor/editor-for-vue": "^5.1.12",
     "ant-design-vue": "^4.2.5",
     "axios": "^1.7.7",
     "browser-image-compression": "^2.0.2",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "moment": "^2.30.1",
     "pinia": "^2.2.6",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "prismjs": "^1.29.0",
     "realm-web": "^2.0.1",
+    "spark-md5": "^3.0.2",
     "vue": "^3.5.10",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@types/codemirror": "^5.60.15",
     "@types/node": "^22.7.7",
+    "@types/spark-md5": "^3.0.5",
     "@vitejs/plugin-vue": "^5.1.4",
     "sass-embedded": "^1.80.3",
     "typescript": "^5.5.3",

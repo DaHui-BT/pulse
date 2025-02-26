@@ -19,7 +19,14 @@ const navbar_list = reactive<NavBarType[]>([{
   key: 'Article',
   name: 'Article',
   path: '/article'
-}, {
+},
+{
+  label: 'Repository',
+  key: 'Repository',
+  name: 'Repository',
+  path: '/repository'
+},
+{
   label: 'Publish',
   key: 'Publish',
   name: 'Publish',
@@ -40,7 +47,7 @@ const navbar_list = reactive<NavBarType[]>([{
 
 onMounted(() => {
   window.onresize = () => {
-    if (window.innerWidth < 400) {
+    if (window.innerWidth < 600) {
       show_menu_collpase.value = true
     } else {
       show_menu_collpase.value = false
@@ -92,7 +99,7 @@ function onSearch() {
     <a-flex class="nav-bar-content" justify="space-between" align="center">
       <router-link to="/home" @click="handleClick({key: 'Home'})"><i class="iconfont nav-bar-logo">&#xe70f;</i></router-link>
       
-      <a-form layout="inline" @finish="onSearch" :model="formState">
+      <!-- <a-form layout="inline" @finish="onSearch" :model="formState">
         <a-form-item>
           <a-input
             v-model:value="formState.search"
@@ -102,7 +109,7 @@ function onSearch() {
         <a-form-item>
           <a-button html-type="submit" shape="circle" type="primary" :icon="h(SearchOutlined)" />
         </a-form-item>
-      </a-form>
+      </a-form> -->
       
       <a-dropdown v-if="show_menu_collpase">
         <a @click.prevent>

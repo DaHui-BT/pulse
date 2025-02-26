@@ -13,12 +13,11 @@
   text-overflow: inherit;
 }
 
-:where(.css-dev-only-do-not-override-17yhhjv).ant-tag.ant-tag-has-color {
-  /* filter: invert(100%); */
-  /* mix-blend-mode: difference; */
-  /* background-color: var(--base-color); */
-  
-}
+/* :where(.css-dev-only-do-not-override-17yhhjv).ant-tag.ant-tag-has-color {
+  filter: invert(100%);
+  mix-blend-mode: difference;
+  background-color: var(--base-color);
+} */
 /* 
 .article-detail .article-detail-container .ant-breadcrumb-link span {
   text-overflow: ellipsis;
