@@ -1,20 +1,20 @@
 <script lang="ts" setup>
 import { reactive, ref, computed } from 'vue'
 
-import { CityService } from '../api/CityService'
-import { CityType } from '../types/city'
-import { UserService } from '../api/UserService'
-import { UserDocument } from '../entities/user'
+import { CityService } from '../../../../api/CityService'
+import { CityType } from '../../../../types/city'
+import { UserService } from '../../../../api/UserService'
+import { UserDocument } from '../../../../entities/user'
 import { message } from 'ant-design-vue'
-import Loading from '../plugins/loading'
-import { Store } from '../store'
-import { useDebounce } from '../utils/debounce'
+import Loading from '../../../../plugins/loading'
+import { useAuthStore } from '../../../../store'
+import { useDebounce } from '../../../../utils/debounce'
 import { ValidatorRule } from 'ant-design-vue/es/form/interface'
 
 const props = defineProps({ user_info: { type: Object as () => UserDocument }})
 type validatorStatus = 'validating' | 'warning' | 'error' | 'success'
 
-const store = Store()
+const store = useAuthStore()
 const is_open_form = ref<boolean>(false)
 const city_service = CityService.getInstance()
 const user_service = UserService.getInstance()
@@ -42,16 +42,23 @@ async function updateUser() {
   is_open_form.value = false
   try {
     Loading.show()
-    user.value.birthday = new Date(formState.birthday)
-    user.value.username = formState.username
-    user.value.email = formState.email
-    user.value.gender = formState.gender
-    user.value.profile.location.province = formState.province
-    user.value.profile.location.city = formState.city
-    user.value.description = formState.description
-    const userResponse = await user_service.updateUser(store.user._id, user.value)
-    if (userResponse.success && userResponse.data) {
-      store.setUser(userResponse.data)
+    const updateUser: Partial<UserDocument> = {
+      birthday: new Date(formState.birthday),
+      username: formState.username,
+      email: formState.email,
+      gender: formState.gender,
+      profile: {
+        location: {
+          province: formState.province,
+          city: formState.city
+        }
+      },
+      description: formState.description,
+    }
+    const userResponse = await user_service.updateUser(store.user._id, updateUser)
+    console.log(userResponse)
+    if (userResponse.success) {
+      message.success(userResponse.message)
     }
   } catch (err) {
     console.log(err)
@@ -153,7 +160,7 @@ function finishFailed({ values, errorFields, outOfDate }: {
       </a-form-item>
 
       <a-space>
-        <a-form-item name="province" label="Province" :rules="[{ required: true }]">
+        <a-form-item name="province" label="Province" :rules="[{ required: false }]">
           <a-select v-model:value="formState.province"
                       @change="changeProvince"
                       style="width: 150px"
@@ -161,7 +168,7 @@ function finishFailed({ values, errorFields, outOfDate }: {
                       :options="city_list.map(pro => ({ value: pro.province }))" />
         </a-form-item>
 
-        <a-form-item name="city" label="City" :rules="[{ required: true }]">
+        <a-form-item name="city" label="City" :rules="[{ required: false }]">
           <a-select v-model:value="formState.city"
                       style="width: 100px"
                       placeholder="city"

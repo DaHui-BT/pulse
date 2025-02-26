@@ -1,4 +1,5 @@
 import { BSON } from "realm-web"
+import PaginationType from "./pagination"
 
 type ErrorType = {
   error: string,
@@ -25,8 +26,9 @@ interface BaseDocument {
 }
 
 interface PaginationOptions {
-  page: number;
-  pageSize: number;
+  current: number;
+  size: number;
+  total?: number
   sortBy?: string;
   sortOrder?: 1 | -1;
 }
@@ -34,6 +36,8 @@ interface PaginationOptions {
 interface ServiceResponse<T> {
   success: boolean;
   data?: T;
+  pagination?: PaginationType,
+  message?: string
   error?: string;
 }
 

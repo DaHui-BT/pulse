@@ -3,10 +3,10 @@
 @import url('./styles/color.css');
 @import url('./styles/constant.css');
 @import url('./styles/github_theme_reset.css');
-@import url('./styles/ant_design_custom.css');
+/* @import url('./styles/ant_design_custom.css'); */
 
 
-:where(.css-dev-only-do-not-override-17yhhjv).ant-comment .ant-comment-nested {
+/* :where(.css-dev-only-do-not-override-17yhhjv).ant-comment .ant-comment-nested {
   margin-left: var(--middle-margin);
 }
 
@@ -15,21 +15,18 @@
   padding-top: 20px;
 }
 
-/* 滚动条宽度 */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
-/* 滚动条轨道 */
 ::-webkit-scrollbar-track {
   background: rgb(239, 239, 239);
   border-radius: 8px;
 }
-/* 小滑块 */
 ::-webkit-scrollbar-thumb {
   background: #40a0ff29;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #40a0ff;
-}
+} */

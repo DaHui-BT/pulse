@@ -1,28 +1,33 @@
 <script setup lang="ts">
 import { reactive, computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { message, UploadChangeParam } from 'ant-design-vue'
+import { message } from 'ant-design-vue'
+import { InboxOutlined } from '@ant-design/icons-vue';
+import dayjs, { Dayjs } from 'dayjs';
 
-import { TagService } from '../api/TagService'
-import { ArticleDocument, ArticleStatus } from '../entities/article'
-import { ArticleService } from '../api/ArticleService'
-import { FileService } from '../api/FileService'
-import { TagDocument } from '../entities/tag'
-import { Store } from '../store'
-import Loading from '../plugins/loading'
-import { JUMP_DELAY } from '../constant'
+import { ArticleDocument } from '../../entities/article'
+import { ArticleService } from '../../api/ArticleService'
+import { FileService } from '../../api/FileService'
+import { TagDocument } from '../../entities/tag'
+import { useAuthStore } from '../../store'
+import Loading from '../../plugins/loading'
+import { JUMP_DELAY } from '../../constant'
 
+
+import FileTools from '../../tools/file'
 
 const route = useRoute()
 const router = useRouter()
-const store = Store()
+const store = useAuthStore()
 const isEdit = ref<boolean>(false)
-const spinning = ref<boolean>(true)
+const spinning = ref<boolean>(false)
 const articleService = ArticleService.getInstance()
 const fileService = FileService.getInstance()
-const tagService = TagService.getInstance()
-const tag_list = reactive<TagDocument[]>([])
-const fileList = ref([])
+const fileTools = new FileTools()
+const tag_list = reactive<TagDocument[]>(store.tags)
+const fileList = ref<string[]>([])
+const options = [{value: 'Article', label: 'Article'}, {value: 'File', label: "File", disabled: true}]
+const selectOption = ref<string>('Article')
 
 interface FormState {
   _id?: string,
@@ -30,7 +35,9 @@ interface FormState {
   tag_list: string[]
   description: string
   content: string,
-  isPublic: boolean
+  isPublic: boolean,
+  expireTime?: Date | null
+  fileList?: string[]
 }
 
 const formState = reactive<FormState>({
@@ -38,8 +45,11 @@ const formState = reactive<FormState>({
   tag_list: [],
   description: '',
   content: '',
-  isPublic: false
+  isPublic: false,
+  expireTime: null,
+  fileList: []
 })
+
 const article = ref<ArticleDocument>({
   createdBy: store.user._id,
   title: '',
@@ -60,16 +70,6 @@ const article = ref<ArticleDocument>({
 })
 
 onMounted(() => {
-  tagService.findAllTags().then(res => {
-    if (res.success) {
-      tag_list.splice(0, tag_list.length)
-      tag_list.push(...(res.data || []))
-    } else {
-      message.error(res.error)
-    }
-    spinning.value = false
-  })
-
   if (route.query._id != undefined && route.query._id != null) {
     isEdit.value = true
     spinning.value = true
@@ -101,9 +101,14 @@ const disabled = computed(() => {
   return !(formState.title.length > 0 
            && formState.tag_list.length > 0
            && formState.description.length > 0
-           && formState.content.length > 0
-           && formState.isPublic != null)
+           && selectOption.value === 'Article' ? (formState.content.length > 0) : (formState.fileList || []).length > 0)
+           && formState.isPublic != null
 })
+
+const disabledDate = (current: Dayjs) => {
+  // Can not select days before today and today
+  return current && current < dayjs().endOf('day');
+};
 
 async function handleUploadImage(e: Event, insertImage: Function, files: File[]) {
   // TODO upload image file and get the image_id
@@ -127,34 +132,39 @@ async function onFinish(values: FormState) {
   article.value.content = values.content
   article.value.public = values.isPublic
   article.value.tags = values.tag_list
-  if (isEdit.value) {
-    if (!formState._id) {
-      throw new Error('Article id error')
+  console.log(formState)
+  if (selectOption.value === 'Article') {
+    if (isEdit.value) {
+      if (!formState._id) {
+        throw new Error('Article id error')
+      }
+      article.value.updatedAt = new Date()
+      await articleService.updateArticle(formState._id, article.value).then(res => {
+        if (res.success) {
+          message.success('update article successfully!')
+          setTimeout(() => {
+            router.push('/article')
+          }, JUMP_DELAY)
+        } else {
+          message.error(res.error)
+        }
+      })
+    } else {
+      article.value.createdAt = new Date()
+      article.value.updatedAt = new Date()
+      await articleService.createArticle(article.value).then(res => {
+        if (res.success) {
+          message.success('publish article successfully!')
+          setTimeout(() => {
+            router.push('/article')
+          }, JUMP_DELAY)
+        } else {
+          message.error(res.error)
+        }
+      })
     }
-    article.value.updatedAt = new Date()
-    await articleService.updateArticle(formState._id, article.value).then(res => {
-      if (res.success) {
-        message.success('update article successfully!')
-        setTimeout(() => {
-          router.push('/article')
-        }, JUMP_DELAY)
-      } else {
-        message.error(res.error)
-      }
-    })
-  } else {
-    article.value.createdAt = new Date()
-    article.value.updatedAt = new Date()
-    await articleService.createArticle(article.value).then(res => {
-      if (res.success) {
-        message.success('publish article successfully!')
-        setTimeout(() => {
-          router.push('/article')
-        }, JUMP_DELAY)
-      } else {
-        message.error(res.error)
-      }
-    })
+  } else if (selectOption.value === 'File') {
+    console.log('2')
   }
   Loading.hide()
 }
@@ -172,34 +182,54 @@ function onFinishFailed(values: { values: FormState,
 }
 
 // [TODO] BUG this funcion will be executed 3 times
-const handleChange = async (info: UploadChangeParam) => {
-  formState.content = await info.file.originFileObj?.text() || formState.content
+const handleChange = async (file: File, fileList: File[]) => {
+  if (selectOption.value === 'Article') {
+    // formState.content = await info.file.originFileObj?.text() || formState.content
+  } else if (selectOption.value === 'File') {
+    // upload File
+    console.log('upload time')
+    formState.fileList = ['']
+    // console.log(info.file.originFileObj)
+    // fileTools.upload(info.file.originFileObj as File, 'file/upload-signle')
+    // formState.fileList = fileList.value
+    // console.log(fileList)
+  }
+  console.log(file, fileList)
+  // console.log(info.file)
+  // console.log(formState)
+  return false
 }
 </script>
 
 <template>
   <div class="publish">
+    <a-typography-title :level="2">{{ isEdit ? 'Edit' : 'Publish' }}</a-typography-title>
     <a-spin :spinning="spinning">
-      <a-typography-title :level="2">{{ isEdit ? 'Edit' : 'Publish' }}</a-typography-title>
-
       <a-form :model="formState" name="norm" @finish="onFinish" @finishFailed="onFinishFailed">
         <a-form-item>
-          <a-button :disabled="disabled" type="primary" html-type="submit">Publish</a-button>
+          <a-flex justify="space-between">
+            <a-button :disabled="disabled" type="primary" html-type="submit">Publish</a-button>
+            <a-select :options="options" v-model:value="selectOption" style="width: 200px"></a-select>
+          </a-flex>
         </a-form-item>
 
           <a-form-item name="title" :rules="[{ required: true, message: 'Please input your title!' }, { max: 50, min: 5}]">
             <a-input placeholder="Input your title" size="large" v-model:value="formState.title"></a-input>
           </a-form-item>
 
-          <a-flex gap="20" align="center">
+          <a-flex gap="20" align="center" wrap="wrap">
             <a-form-item name="tag_list" :rules="[{ required: true, max: 3, min: 1, type: 'array' }]">
               <a-select
                   size="large"
                   v-model:value="formState.tag_list"
                   :options="tag_list.map(tag => ({label: tag.name, value: tag._id + ''}))"
-                  mode="tags"
+                  mode="multiple"
                   placeholder="select your tag"
                   style="min-width: 200px"></a-select>
+            </a-form-item>
+            
+            <a-form-item name="expireTime">
+              <a-date-picker :disabled-date="disabledDate" v-model:value="formState.expireTime" show-time placeholder="Exipre Date"/>
             </a-form-item>
             
             <a-form-item name="isPublic" :rules="[{ required: true, message: 'Please input your permission!' }]">
@@ -211,7 +241,7 @@ const handleChange = async (info: UploadChangeParam) => {
           <a-textarea size="large" placeholder="Input your description" class="publish-describe" v-model:value="formState.description"></a-textarea>
         </a-form-item>
 
-        <a-form-item>
+        <a-form-item name="content" :rules="[{ required: true, message: 'Please input your content!' }]" v-if="selectOption === 'Article'">
           <a-upload
             v-model:file-list="fileList"
             name="file"
@@ -223,10 +253,25 @@ const handleChange = async (info: UploadChangeParam) => {
               Upload to Analyse
             </a-button>
           </a-upload>
-        </a-form-item>
-
-        <a-form-item name="content" :rules="[{ required: true, message: 'Please input your content!' }]">
           <v-md-editor v-model="formState.content" :disabled-menus="[]" @upload-image="handleUploadImage" height="400px"></v-md-editor>
+        </a-form-item>
+        
+        <a-form-item name="fileList" :rules="[{ required: true, message: 'Please input your files!' }]" v-else-if="selectOption === 'File'">
+          <a-upload-dragger
+            v-model:fileList="fileList"
+            name="file"
+            :multiple="true"
+            :beforeUpload="handleChange"
+          >
+            <p class="ant-upload-drag-icon">
+              <inbox-outlined></inbox-outlined>
+            </p>
+            <p class="ant-upload-text">Click or drag file to this area to upload</p>
+            <p class="ant-upload-hint">
+              Support for a single or bulk upload. Strictly prohibit from uploading company data or other
+              band files
+            </p>
+          </a-upload-dragger>
         </a-form-item>
       </a-form>
     </a-spin>

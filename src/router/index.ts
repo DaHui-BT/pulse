@@ -1,10 +1,9 @@
 import { createWebHashHistory, createRouter } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { JUMP_DELAY } from '../constant'
-// import { AuthorizationService } from '../services/AuthorizationService'
 
 import { message } from 'ant-design-vue'
-import { Store } from '../store'
+import { useAuthStore } from '../store'
 
 const routes: Readonly<RouteRecordRaw[]> = [
   {
@@ -13,16 +12,16 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/home',
     name: 'Home',
-    component: () => import('../pages/Home.vue'),
+    component: () => import('../pages/home/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: true,
-      needContainer: false
+      needContainer: true
     }
   }, {
     path: '/publish',
     name: 'Publish',
-    component: () => import('../pages/Publish.vue'),
+    component: () => import('../pages/publish/index.vue'),
     meta: {
       requiresAuth: true,
       showNavbar: true,
@@ -31,7 +30,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/article',
     name: 'Article',
-    component: () => import('../pages/Article.vue'),
+    component: () => import('../pages/article/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: true,
@@ -40,7 +39,25 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/article-detail',
     name: 'ArticleDetail',
-    component: () => import('../pages/ArticleDetail.vue'),
+    component: () => import('../pages/article-detail/index.vue'),
+    meta: {
+      requiresAuth: false,
+      showNavbar: true,
+      needContainer: true
+    }
+  }, {
+    path: '/repository',
+    name: 'Repository',
+    component: () => import('../pages/repository/index.vue'),
+    meta: {
+      requiresAuth: false,
+      showNavbar: true,
+      needContainer: true
+    }
+  }, {
+    path: '/repository-detail',
+    name: 'RepositoryDetail',
+    component: () => import('../pages/repository-detail/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: true,
@@ -49,7 +66,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/profile',
     name: 'Profile',
-    component: () => import('../pages/Profile.vue'),
+    component: () => import('../pages/profile/index.vue'),
     meta: {
       requiresAuth: true,
       showNavbar: true,
@@ -76,7 +93,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/login',
     name: 'Login',
-    component: () => import('../pages/Login.vue'),
+    component: () => import('../pages/login/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: false,
@@ -120,7 +137,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     // judge is login or not
-    const store = Store()
+    const store = useAuthStore()
     if (store.isAuthenticated) {
       next()
     } else {

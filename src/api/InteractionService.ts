@@ -1,5 +1,7 @@
 import { InteractionDocument } from "../entities/interaction"
 import { Request } from "../tools/request"
+import { PageType } from "../types/page"
+import PaginationType from "../types/pagination"
 import type { ObjectId, PaginationOptions, ServiceResponse } from "../types/realm"
 
 class InteractionService {
@@ -39,11 +41,25 @@ class InteractionService {
     }
   }
 
-  public async findInteractions(filter: Partial<InteractionDocument> = {}): Promise<ServiceResponse<{ interactions: InteractionDocument[], total: number }>> {
+  public async findInteractions(filter: Partial<InteractionDocument & PaginationType> = {}): Promise<ServiceResponse<{ interactions: InteractionDocument[], pagination: PaginationType }>> {
     try {
-      const response = await this.request.get<InteractionDocument[]>('/interaction', { params: filter})
+      const response = await this.request.get<{data: InteractionDocument[], pagination: PaginationType}>('/interaction', { params: filter})
       if (response.code == 200) {
-        return { success: true, data: {interactions: response.data, total: 1}}
+        return { success: true, data: {interactions: response.data.data, pagination: response.data.pagination}}
+      } else {
+        return { success: false, error: response.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+
+  public async findAllInteractionsByUserId(userId: string): Promise<ServiceResponse<InteractionDocument[]>> {
+    try {
+      const response = await this.request.get<InteractionDocument[]>(`/interaction-all/${userId}`)
+      if (response.code == 200) {
+        return { success: true, data: response.data}
       } else {
         return { success: false, error: response.message }
       }

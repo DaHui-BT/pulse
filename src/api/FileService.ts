@@ -55,14 +55,34 @@ class FileService {
     }
   }
 
+  public async existFileByHash(hash: string): Promise<ServiceResponse<boolean>> {
+    try {
+      const file = await this.request.get<boolean>(`/file/exist/${hash}`)
+      return { success: true, data: file.data }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  public async mergeChunks(hash: string): Promise<ServiceResponse<boolean>> {
+    try {
+      const res = await this.request.post<boolean>(`/file/merge`, { data: { hash } })
+      return { success: true, data: res.data }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
   public async uploadFile(
-    fileData: File
+    fileData: File | FormData
   ): Promise<ServiceResponse<{fileUrl: string}>> {
     try {
       const response = await this.request.post<{fileUrl: string}>('/file/upload-single', 
                                                                   { data:
-                                                                    {file: fileData},
-                                                                    headers: {"Content-Type": 'multipart/form-data'} })
+                                                                    fileData,
+                                                                    headers: {
+                                                                      "Content-Type": 'multipart/form-data'
+                                                                    } })
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {

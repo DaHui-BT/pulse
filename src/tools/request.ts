@@ -2,6 +2,8 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method,
                 AxiosInterceptorManager, InternalAxiosRequestConfig,
                 AxiosHeaders } from 'axios'
 
+import { useAuthStore } from '../store'
+
 type Interceptors = {
   request: AxiosInterceptorManager<InternalAxiosRequestConfig>
   response: AxiosInterceptorManager<AxiosResponse>
@@ -19,6 +21,8 @@ export class Request {
   timeout: number
   baseURL: string = import.meta.env.VITE_BASE_URL
   interceptors: Interceptors
+  store = useAuthStore()
+  expireRequests: InternalAxiosRequestConfig[] = []
 
   constructor(config: AxiosRequestConfig = {}) {
     // Default values for timeout and baseURL
@@ -44,13 +48,28 @@ export class Request {
   private setupInterceptors(): void {
     // Request interceptor - Token management, Add Authorization header
     this.instance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('accessToken') // Or from your store (e.g., Pinia)
-        if (token) {
+      async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig<any>> => {
+        const token = this.store.accessToken // Or from your store (e.g., Pinia)
+        
+        if (token && this.store.getExpireTime(token).getTime() > Date.now()) {
           config.headers = AxiosHeaders.from({
             ...config.headers,
             Authorization: `Bearer ${token}`,
           })
+        } else {
+          this.expireRequests.push(config)
+          if (this.store.refreshToken.length > 0) {
+            // return await this.post<string>('refresh', { data: {token: this.store.refreshToken} }).then(
+            //   (res) => {
+            //     if (res.code === 200) {
+            //       this.store.setAccessToken(res.data)
+            //       return config
+            //     } else {
+            //       this.store.logout()
+            //     }
+            //   }
+            // )
+          }
         }
         return config
       },
@@ -61,13 +80,12 @@ export class Request {
 
     // Response interceptor - Global response handling (e.g., error management)
     this.instance.interceptors.response.use(
-      (response: AxiosResponse) => {
+      async (response: AxiosResponse) => {
         // Centralized error handling (e.g., logging, alerting)
         if (response.data.code && response.data.code === 401) {
           // Handle token expiry or unauthorized errors globally
           console.error('Unauthorized! Redirecting to login...')
           // Optionally, you could log the user out or refresh the token here
-          localStorage.removeItem('token')
         }
         // return Promise.reject(response)
         // You can handle common response formatting here if needed

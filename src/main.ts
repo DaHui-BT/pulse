@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import router from './router'
 
@@ -9,14 +10,16 @@ import './style.css'
 import App from './App.vue'
 import { VMdEditor, VMdPreview } from './config/MarkdownConfig'
 
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
 const app = createApp(App)
-app.use(createPinia())
-  .use(router)
-  .use(VMdEditor)
-  .use(VMdPreview)
-app.directive('draggable', Drag)
-app
-  .mount('#app')
+app.use(pinia)
+    .use(router)
+    .use(VMdEditor)
+    .use(VMdPreview)
+    .directive('draggable', Drag)
+    .mount('#app')
 
 
 // just for test

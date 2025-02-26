@@ -1,5 +1,6 @@
 import { CityDocument } from "../entities/city"
 import { Request } from "../tools/request"
+import PaginationType from "../types/pagination"
 import { ObjectId, PaginationOptions, ServiceResponse } from "../types/realm"
 
 class CityService {
@@ -32,9 +33,9 @@ class CityService {
   
   public async findAllCitys(): Promise<ServiceResponse<CityDocument[]>> {
     try {
-      const response = await this.request.get<CityDocument[]>('/city')
+      const response = await this.request.get<{data: CityDocument[], pagination: PaginationType}>('/city')
       if (response.code == 200) {
-        return { success: true, data: response.data }
+        return { success: true, data: response.data.data, pagination: response.data.pagination }
       } else {
         return { success: false, error: response.message }
       }
