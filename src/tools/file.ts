@@ -82,7 +82,7 @@ export class FileUploader {
 
   // 分片哈希计算（Worker优化版）
   private async calculateChunkHashes(chunks: ChunkMeta[]): Promise<void> {
-    const worker = new Worker(new URL('./hash.worker.ts', import.meta.url))
+    const worker = new Worker(new URL('/workers/hash.worker.ts', import.meta.url))
     
     return new Promise((resolve, reject) => {
       worker.onmessage = (e) => {
