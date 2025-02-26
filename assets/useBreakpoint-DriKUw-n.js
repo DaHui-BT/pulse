@@ -1,0 +1,1 @@
+import{u as r}from"./index-Dt6m71WR.js";import{s as u,g as t,b5 as a}from"./index-C65JRPnL.js";function b(){const e=u({});let s=null;const n=r();return t(()=>{s=n.value.subscribe(o=>{e.value=o})}),a(()=>{n.value.unsubscribe(s)}),e}export{b as u};
