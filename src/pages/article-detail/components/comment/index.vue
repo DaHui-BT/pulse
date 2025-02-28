@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import moment from 'moment'
 
 import { LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined, RightOutlined, DownOutlined } from '@ant-design/icons-vue'
-import { CommentAggrateDocument } from '../../../../entities/comment'
+import { CommentAggrateDocument, CommentDocument } from '../../../../entities/comment'
 import Comment from './index.vue'
 import { CommentInteractionDocument } from '../../../../entities/commentInteraction'
 import { useAuthStore } from '../../../../store'
@@ -14,7 +14,7 @@ import PaginationType from '../../../../types/pagination'
 const emits = defineEmits(['replay', 'like', 'dislike', 'delete'])
 const props = defineProps({
   comment: {
-    type: Object as () => CommentAggrateDocument,
+    type: Object as () => CommentDocument,
     default: {}
   },
   comment_interaction_list: {
@@ -23,12 +23,19 @@ const props = defineProps({
   }
 })
 const store = useAuthStore()
+const comment = reactive<CommentAggrateDocument>({
+  ...props.comment,
+  children: []
+})
+const spinning = ref<boolean>(false)
+const childSpinning = ref<boolean>(false)
 const comment_service = CommentService.getInstance()
 const isShowChildComment = ref<boolean>(false)
 const pagination = reactive<PaginationType>({
   current: 1,
-  size: 0,
-  total: 0
+  size: 3,
+  total: 0,
+  pages: 0
 })
 
 const like = (commentId: string | undefined, isCancel: boolean = false) => {
@@ -39,7 +46,7 @@ const dislike = (commentId: string | undefined, isCancel: boolean = false) => {
   commentId && emits('dislike', commentId, isCancel)
 }
 
-function replay(comment: CommentAggrateDocument) {
+function replay(comment: CommentDocument) {
   emits('replay', comment)
 }
 
@@ -75,9 +82,12 @@ function deleteComment(id: string | undefined) {
 
 function loadChildComments(comment: CommentAggrateDocument) {
   if (isShowChildComment.value) {
+    pagination.current = 1
     comment.children.splice(0, comment.children.length)
   } else {
-    comment_service.findChildComments({ parentComment: comment._id }).then(res => {
+    childSpinning.value = true
+    comment_service.findChildComments({ parentComment: comment._id },
+                                      {current: pagination.current, size: pagination.size}).then(res => {
       if (res.data) {
         pagination.current = res.data.pagination.current
         pagination.size = res.data.pagination.size
@@ -88,14 +98,17 @@ function loadChildComments(comment: CommentAggrateDocument) {
         }
         comment.children.push(...(res.data.comments.map(c => ({...c, children: []}))))
       }
-    })
+    }).catch(err => {
+      message.error(err.message)
+    }).finally(() => childSpinning.value = false)
   }
   isShowChildComment.value = !isShowChildComment.value
 }
 
 function loadMoreChildComment(comment: CommentAggrateDocument) {
   pagination.current += 1
-  comment_service.findChildComments({ parentComment: comment._id }, pagination).then(res => {
+  spinning.value = true
+  comment_service.findChildComments({ parentComment: comment._id }, {current: pagination.current, size: pagination.size}).then(res => {
     if (res.data) {
       pagination.current = res.data.pagination.current
       pagination.size = res.data.pagination.size
@@ -103,7 +116,9 @@ function loadMoreChildComment(comment: CommentAggrateDocument) {
 
       comment.children.push(...(res.data.comments.map(c => ({...c, children: []}))))
     }
-  })
+  }).catch(err => {
+    message.error(err.message)
+  }).finally(() => spinning.value = false)
 }
 
 </script>
@@ -156,24 +171,28 @@ function loadMoreChildComment(comment: CommentAggrateDocument) {
       <p>{{ comment?.content }}</p>
     </template>
     
-    <a-alert v-if="comment.childrenLen" style="color: #666" :message="`total replay: ${comment.childrenLen}`" type="info">
-      <template #action>
-        <a-button size="small" type="text" @click="() => loadChildComments(comment)">
-          <DownOutlined v-if="isShowChildComment"/>
-          <RightOutlined v-else/>
-        </a-button>
-      </template>
-    </a-alert>
+    <a-spin :spinning="childSpinning">
+      <a-alert v-if="comment.childrenLen" style="color: #666" :message="`Total replay: ${comment.childrenLen}`" type="info">
+        <template #action>
+          <a-button size="small" type="text" @click="() => loadChildComments(comment)">
+            <DownOutlined v-if="isShowChildComment"/>
+            <RightOutlined v-else/>
+          </a-button>
+        </template>
+      </a-alert>
+    </a-spin>
 
     <div v-if="comment.children && comment.children.length">
       <Comment v-for="inner_comment in comment.children"
                :key="inner_comment._id" :comment="inner_comment"
                :comment_interaction_list="comment_interaction_list"
                @replay="replay" @like="like" @dislike="dislike"></Comment>
-               
-      <a-flex justify="center" v-if="comment.children.length < pagination.total">
-        <a-button type="link" @click="loadMoreChildComment(comment)">loadMore</a-button>
-      </a-flex>
+      
+      <a-spin :spinning="spinning">
+        <a-flex justify="center" v-if="comment.children.length < pagination.total">
+          <a-button type="link" @click="loadMoreChildComment(comment)">loadMore</a-button>
+        </a-flex>
+      </a-spin>
     </div>
   </a-comment>
 </template>

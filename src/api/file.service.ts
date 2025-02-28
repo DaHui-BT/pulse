@@ -1,5 +1,7 @@
 import { FileDocument } from "../entities/file"
-import { Request } from "../tools/request"
+import { ChunkType } from "../tools/file.tool"
+import { Request, ResponseType } from "../tools/request"
+import { FileType } from "../types/file"
 import { PaginationOptions, ServiceResponse } from "../types/realm"
 
 class FileService {
@@ -64,25 +66,17 @@ class FileService {
     }
   }
 
-  public async mergeChunks(hash: string): Promise<ServiceResponse<boolean>> {
-    try {
-      const res = await this.request.post<boolean>(`/file/merge`, { data: { hash } })
-      return { success: true, data: res.data }
-    } catch (error: any) {
-      return { success: false, error: error.message }
-    }
+  public async mergeChunks(mergeMeta: {fileName: string, fileHash: string, chunkSize: number}): Promise<ResponseType<string>> {
+    return this.request.post<string>(`/file/merge`, { data: mergeMeta })
   }
   
   public async uploadFile(
-    fileData: File | FormData
-  ): Promise<ServiceResponse<{fileUrl: string}>> {
+    fileData: FileType
+  ): Promise<ServiceResponse<boolean>> {
     try {
-      const response = await this.request.post<{fileUrl: string}>('/file/upload-single', 
-                                                                  { data:
-                                                                    fileData,
-                                                                    headers: {
-                                                                      "Content-Type": 'multipart/form-data'
-                                                                    } })
+      const response = await this.request.post<boolean>('/file', {
+        data: fileData
+      })
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {
@@ -94,15 +88,16 @@ class FileService {
   }
 
   public async uploadChunk(
-    fileData: File | FormData
+    chunk: ChunkType,
+    signal: AbortSignal | undefined = undefined
   ): Promise<ServiceResponse<{fileUrl: string}>> {
     try {
-      const response = await this.request.post<{fileUrl: string}>('/file/upload-single', 
+      const response = await this.request.post<{fileUrl: string}>('/file/chunk', 
                                                                   { data:
-                                                                    fileData,
+                                                                    chunk,
                                                                     headers: {
                                                                       "Content-Type": 'multipart/form-data'
-                                                                    } })
+                                                                    }, signal })
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {

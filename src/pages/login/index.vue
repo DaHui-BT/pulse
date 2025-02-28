@@ -82,8 +82,7 @@ const disabled = computed(() => {
         <a-form-item
           label="Password"
           name="password"
-          :rules="[{ required: true, message: 'Please input your password!' },
-                   { min: 6, max: 32, message: 'Password should in range of (6, 32)' }]"
+          :rules="[{ required: true, message: 'Please input your password!' }]"
         >
           <a-input-password v-model:value="formState.password" placeholder="Password">
             <template #prefix>

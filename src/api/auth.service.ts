@@ -74,7 +74,7 @@ class AuthService {
   
   async confirmAuth(token: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.post(`/user/confirm`, { data: {token: token} })
+      const response = await this.request.post(`/confirm`, { data: {token: token} })
       if (response.code == 200) {
         return { success: true }
       } else {
@@ -87,7 +87,7 @@ class AuthService {
   
   async resendConfirmationEmail(email: string): Promise<ServiceResponse<void>> {
     try {
-      const response = await this.request.post('/user/resend-email', { data: { email: email } })
+      const response = await this.request.post('/resend-email', { data: { email: email } })
       if (response.code == 200) {
         return { success: true }
       } else {

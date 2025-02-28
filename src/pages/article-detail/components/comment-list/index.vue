@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue';
-import { CommentAggrateDocument, CommentDocument } from '../../../../entities/comment';
+import { CommentDocument } from '../../../../entities/comment';
 import { CommentService } from '../../../../api/CommentService';
 import PaginationType from '../../../../types/pagination';
 import { message } from 'ant-design-vue';
@@ -21,7 +21,6 @@ const article_service = ArticleService.getInstance()
 const comment_service = CommentService.getInstance()
 const comment_interaction_service = CommentInteractionService.getInstance()
 const comment_list = reactive<CommentDocument[]>([])
-const comment_aggrate_list = reactive<Array<CommentAggrateDocument>>([])
 const spinning = ref<boolean>(true)
 const submit_loading = ref<boolean>(false)
 const comment = ref<string | null>(null)
@@ -29,26 +28,28 @@ const comment_ref = ref<HTMLTextAreaElement | null>(null)
 const parent_comment_id = ref<string | null>(null)
 const comment_interaction_list = reactive<CommentInteractionDocument[]>([])
 const replay_placeholder = ref<string | null> (null)
+const commentSpinning = ref<boolean>(false)
 const pagination = reactive<PaginationType>({
   current: 1,
   size: 3,
-  total: 0
+  total: 0,
+  pages: 0
 })
 
 function loadData(clear: boolean = false) {
   if (clear) {
     comment_list.splice(0, comment_list.length)
   }
-  comment_aggrate_list.splice(0, comment_aggrate_list.length)
+  spinning.value = true
   comment_service.findChildComments({article: props.articleId, parentComment: ''},
                                     {current: pagination.current, size: pagination.size}).then(res => {
     if (res.success) {
       comment_list.push(...(res.data?.comments || []))
-      comment_aggrate_list.push(...commentCombine(comment_list || []))
       if (res.data?.pagination) {
         pagination.current = res.data.pagination.current
         pagination.size = res.data.pagination.size
         pagination.total = res.data.pagination.total
+        pagination.pages = res.data.pagination.pages
       }
     } else {
       message.error(res.error)
@@ -71,32 +72,32 @@ onMounted(() => {
   loadCommentInteraction()
 })
 
-function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[] {
-  let commentAggrateList: CommentAggrateDocument[] = []
+// function commentCombine(commentList: CommentDocument[]): CommentAggrateDocument[] {
+//   let commentAggrateList: CommentAggrateDocument[] = []
 
-  commentList.forEach(comment => {
-    if (comment.parentComment == null || comment.parentComment.length == 0) {
-      commentAggrateList.push({...comment, children: []})
-    }
-  })
+//   commentList.forEach(comment => {
+//     if (comment.parentComment == null || comment.parentComment.length == 0) {
+//       commentAggrateList.push({...comment, children: []})
+//     }
+//   })
 
-  function combine(innerCommentList: CommentDocument[], fatherCommentList: CommentAggrateDocument[]) {
-    for (let comment of innerCommentList) {
-      if (comment.parentComment + '' != null) {
-        for (let comment_aggrate of fatherCommentList) {
-          if (comment_aggrate._id + '' == comment.parentComment + '') {
-            comment_aggrate.children.push({...comment, children: []})
-          } else if (comment_aggrate.children.length > 0) {
-            combine(innerCommentList, comment_aggrate.children)
-          }
-        }
-      }
-    }
-  }
+//   function combine(innerCommentList: CommentDocument[], fatherCommentList: CommentAggrateDocument[]) {
+//     for (let comment of innerCommentList) {
+//       if (comment.parentComment + '' != null) {
+//         for (let comment_aggrate of fatherCommentList) {
+//           if (comment_aggrate._id + '' == comment.parentComment + '') {
+//             comment_aggrate.children.push({...comment, children: []})
+//           } else if (comment_aggrate.children.length > 0) {
+//             combine(innerCommentList, comment_aggrate.children)
+//           }
+//         }
+//       }
+//     }
+//   }
 
-  combine(commentList, commentAggrateList)
-  return commentAggrateList
-}
+//   combine(commentList, commentAggrateList)
+//   return commentAggrateList
+// }
 
 function loadMore() {
   pagination.current += 1
@@ -209,6 +210,7 @@ function closeReplayHandler() {
 
 function submitHandler() {
   if (comment.value) {
+    commentSpinning.value = true
     comment_service.createComment({
       article: props.articleId,
       content: comment.value,
@@ -227,7 +229,7 @@ function submitHandler() {
         parent_comment_id.value = null
         loadData(true)
       } else { message.error(res.message) }
-    }).catch(err => message.error(err.message))
+    }).catch(err => message.error(err.message)).finally(() => commentSpinning.value = false)
   } else {
     message.error('Please input your comment first before submit')
   }
@@ -235,14 +237,16 @@ function submitHandler() {
 </script>
 
 <template>
-  <Comment v-for="comment in comment_aggrate_list"
+  <Comment v-for="comment in comment_list"
           :key="comment._id + ''"
           :comment="comment" :comment_interaction_list="comment_interaction_list"
           @replay="replay" @like="likeHandler" @dislike="dislikeHandler" @delete="deleteComment"></Comment>
   
-  <a-flex justify="center" v-if="comment_list.length < pagination.total ">
-    <a-button type="link" @click="loadMore">loadMore</a-button>
-  </a-flex>
+  <a-spin :spinning="spinning">
+    <a-flex justify="center" v-if="comment_list.length < pagination.total ">
+      <a-button type="link" @click="loadMore">loadMore</a-button>
+    </a-flex>
+  </a-spin>
 
   <a-comment class="comment-input-container">
     <template #avatar>
@@ -255,21 +259,26 @@ function submitHandler() {
         <a-typography-link type="secondary" class="close" @click="closeReplayHandler">x</a-typography-link>
       </a-flex>
 
-      <a-form-item>
-        <a-textarea v-model:value="comment" :rows="4"
-                    placeholder="input your comment" ref="comment_ref"
-                    :disabled="!store.isAuthenticated" />
-      </a-form-item>
+      <a-spin :spinning="commentSpinning">
+        <a-form>
+          <a-form-item>
+            <a-textarea v-model:value="comment" :rows="4"
+                        :placeholder="store.isAuthenticated ? 'Input your comment' : 'Login for comment'"
+                        ref="comment_ref"
+                        :disabled="!store.isAuthenticated" />
+          </a-form-item>
 
-      <a-form-item>
-        <a-tooltip :title="store.isAuthenticated ? 'comment' : 'login for comment'">
-          <a-button html-type="submit" :loading="submit_loading"
-                    type="primary" @click="submitHandler"
-                    :disabled="!store.isAuthenticated">
-            Add Comment
-          </a-button>
-        </a-tooltip>
-      </a-form-item>
+          <a-form-item>
+            <a-tooltip :title="store.isAuthenticated ? 'comment' : 'login for comment'">
+              <a-button html-type="submit" :loading="submit_loading"
+                        type="primary" @click="submitHandler"
+                        :disabled="!store.isAuthenticated">
+                Add Comment
+              </a-button>
+            </a-tooltip>
+          </a-form-item>
+        </a-form>
+      </a-spin>
     </template>
   </a-comment>
 </template>

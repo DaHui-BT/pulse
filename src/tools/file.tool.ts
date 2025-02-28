@@ -2,12 +2,21 @@
 import SparkMD5 from 'spark-md5'
 import { FileService } from '../api/file.service'
 
+
 interface ChunkMeta {
   index: number
   start: number
   end: number
   hash: string
   blob: Blob
+}
+
+export type ChunkType = {
+  file: Blob,
+  hash: string,
+  index: number,
+  total: number,
+  fileHash: string
 }
 
 const DEFAULT_CHUNK_SIZE = 2 * 1024 * 1024 // 2MB
@@ -82,7 +91,7 @@ export class FileUploader {
 
   // 分片哈希计算（Worker优化版）
   private async calculateChunkHashes(chunks: ChunkMeta[]): Promise<void> {
-    const worker = new Worker(new URL('/workers/hash.worker.ts', import.meta.url))
+    const worker = new Worker(new URL('/workers/hash.worker.ts', import.meta.url), { type: 'module' })
     
     return new Promise((resolve, reject) => {
       worker.onmessage = (e) => {
@@ -108,30 +117,35 @@ export class FileUploader {
     const pendingQueue = [...chunks]
     const activeTasks: Promise<void>[] = []
     let completed = 0
+    let resolve: (value?: any) => void = () => {}
+    let reject: (value?: any) => void = () => {}
+    const promise = new Promise((res, rej) => {resolve = res, reject = rej})
 
     const processNext = async (): Promise<void> => {
       if (pendingQueue.length === 0 || this.abortController.signal.aborted) return
 
       const chunk = pendingQueue.shift()!
-      // const task = this.fileService.uploadChunk({
-      //   file: chunk.blob,
-      //   hash: chunk.hash,
-      //   index: chunk.index,
-      //   total: chunks.length,
-      //   fileHash: this.fileHash
-      // }, this.abortController.signal)
-        .then(() => {
-          completed++
-          console.log(`Progress: ${((completed / chunks.length) * 100).toFixed(1)}%`)
-        })
-        .catch(err => {
-          if (!this.abortController.signal.aborted) {
-            pendingQueue.push(chunk) // 重新加入队列
-          }
-        })
-        .finally(() => {
-          activeTasks.splice(activeTasks.indexOf(task), 1)
-        })
+      const task = this.fileService.uploadChunk({
+        file: chunk.blob,
+        hash: chunk.hash,
+        index: chunk.index,
+        total: chunks.length,
+        fileHash: this.fileHash
+      }, this.abortController.signal).then(() => {
+        completed++
+        console.log(`Progress: ${((completed / chunks.length) * 100).toFixed(1)}%`)
+        if (completed === chunks.length) {
+          resolve()
+        }
+      }).catch(err => {
+        if (!this.abortController.signal.aborted) {
+          pendingQueue.push(chunk) // 重新加入队列
+        } else {
+          reject(err)
+        }
+      }).finally(() => {
+        activeTasks.splice(activeTasks.indexOf(task), 1)
+      })
 
       activeTasks.push(task)
       await processNext()
@@ -143,10 +157,11 @@ export class FileUploader {
       .map(processNext)
 
     await Promise.all(workers)
+    return promise
   }
 
   // 主上传流程
-  async upload(file: File) {
+  async upload(file: File): Promise<{ success: boolean, data: string | null, message: string }> {
     this.file = file
     try {
       // 步骤1: 计算文件整体哈希
@@ -155,7 +170,7 @@ export class FileUploader {
       // 步骤2: 检查服务端是否已存在完整文件
       const existRes = await this.fileService.existFileByHash(this.fileHash)
       if (existRes.data) {
-        return { success: true, skipped: true }
+        return { success: true, data: null, message: 'File already upload' }
       }
 
       // 步骤3: 创建分片
@@ -168,16 +183,17 @@ export class FileUploader {
       await this.uploadChunks(chunks)
 
       // 步骤6: 通知服务端合并
-      // await this.fileService.mergeChunks({
-      //   fileName: file.name,
-      //   fileHash: this.fileHash,
-      //   chunkSize: this.chunkSize
-      // })
-
-      return { success: true }
+      const response = await this.fileService.mergeChunks({
+        fileName: file.name,
+        fileHash: this.fileHash,
+        chunkSize: this.chunkSize
+      })
+      if (response.code === 200) {
+        return {success: true, data: response.data, message: 'Upload file successfully'}
+      }
     } catch (err) {
       console.error('Upload failed:', err)
-      return { success: false, error: err }
+      return { success: false, message: 'Upload failed', data: null }
     }
   }
 

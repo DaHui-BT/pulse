@@ -11,7 +11,7 @@ import DragSort from './components/drag-sort/index.vue';
 import Pins from './components/pins/index.vue'
 
 const store = useAuthStore()
-const ellipsis = ref(true);
+const ellipsis = ref(true)
 const interaction_service = InteractionService.getInstance()
 const article_service = ArticleService.getInstance()
 const tag_service = TagService.getInstance()
@@ -66,56 +66,66 @@ function dragUpdate(values: any) {
       <a-flex :gap="30" class="home-profile">
         <a-flex vertical>
           <a-typography-title :level="2">Overview</a-typography-title>
-          <a-avatar class="home-profile-avatar" src="https://qcanog5pn8uvzraw.public.blob.vercel-storage.com/static/1737987790963-2-GUfq1xsOuhu2O5upalO6uXwEDikA78.jpg">
-          </a-avatar>
-          <a-typography-title :level="3">DaHui</a-typography-title>
-          <a-row class="home-profile-stats">
-            <a-col :span="11">
-              <a-statistic title="Articles" :value="112893" />
-            </a-col>
-            <a-col class="divider"></a-col>
-            <a-col :span="11">
-              <a-statistic title="Watchers" :value="112893" />
-            </a-col>
-          </a-row>
-          
-          <a-flex :gap="10" justify="space-between" class="home-profile-links">
-            <a-typography-link href="https://github.com/DaHui-BT#main-content" target="_blank">
-              Github
-            </a-typography-link>
-            <a-typography-link href="https://blog.csdn.net/weixin_47179998" target="_blank">
-              CSDN
-            </a-typography-link>
-            <a-typography-link href="https://stackoverflow.com/users/24543992/hui-xiao" target="_blank">
-              StackOverflow
-            </a-typography-link>
+
+          <a-flex class="home-profile-container" vertical>
+            <a-avatar class="home-profile-avatar" src="https://qcanog5pn8uvzraw.public.blob.vercel-storage.com/static/1737987790963-2-GUfq1xsOuhu2O5upalO6uXwEDikA78.jpg">
+            </a-avatar>
+            <a-flex vertical class="home-profile-detail">
+              <a-typography-title :level="3">DaHui</a-typography-title>
+              <a-row class="home-profile-stats">
+                <a-col :span="11">
+                  <a-statistic title="Articles" :value="112893" />
+                </a-col>
+                <a-col class="divider"></a-col>
+                <a-col :span="11">
+                  <a-statistic title="Watchers" :value="112893" />
+                </a-col>
+              </a-row>
+              
+              <a-flex :gap="10" justify="space-between" class="home-profile-links">
+                <a-typography-link href="https://github.com/DaHui-BT#main-content" target="_blank">
+                  Github
+                </a-typography-link>
+                <a-typography-link href="https://blog.csdn.net/weixin_47179998" target="_blank">
+                  CSDN
+                </a-typography-link>
+                <a-typography-link href="https://stackoverflow.com/users/24543992/hui-xiao" target="_blank">
+                  StackOverflow
+                </a-typography-link>
+              </a-flex>
+            </a-flex>
           </a-flex>
         </a-flex>
 
-        <a-flex :gap="10" wrap="wrap" class="home-profile-container">
+        <a-flex :gap="10" wrap="wrap" class="home-profile-content">
           <a-flex justify="space-between" class="home-profile-title">
             <a-typography-title :level="5">Pined</a-typography-title>
             <Pins />
           </a-flex>
-          <DragSort :data="recommand_article_list" :key="recommand_article_list.length" v-on:update:data="dragUpdate">
+
+          <DragSort :data="recommand_article_list" :key="recommand_article_list.length"
+                    v-on:update:data="dragUpdate" v-if="recommand_article_list.length > 0">
             <template v-slot="article">
               <a-card class="home-profile-card-item" draggable="true">
                 <template #title>
                   <a-typography-link :href="`#article-detail?_id=${article.item._id}`">{{ article.item.title }}</a-typography-link>
                 </template>
+
                 <template #extra>
                   <i class="iconfont draggable-cursor">&#xe6ff;</i>
                 </template>
+
                 <a-typography-paragraph class="home-profile-card-content-describe"
                   :ellipsis="ellipsis ? { rows: 3, expandable: false } : false"
                   :content="article.item.content"
                 />
                 <a-flex :gap="10" class="home-profile-card-item-footer">
-                  <a-tag v-for="tag in article.item.tags" :key="tag" color="blue">{{ store.tags.filter(t => t._id == tag)[0].name }}</a-tag>
+                  <a-tag v-for="tag in article.item.tags" :key="tag" color="blue">{{ store.tags.filter(t => t._id == tag)?.at(0)?.name }}</a-tag>
                 </a-flex>
               </a-card>
             </template>
           </DragSort>
+          <a-empty description="No recommand article!" v-else style="width: 100%"/>
         </a-flex>
       </a-flex>
     </section>
@@ -134,7 +144,12 @@ function dragUpdate(values: any) {
 
   .home-profile {
 
+    .home-profile-detail {
+      width: 100%;
+    }
+
     .home-profile-avatar {
+      transition: width 0.5s ease-in-out, height 0.5s ease-in-out;
       width: 200px;
       height: 200px;
       margin-top: 50px;
@@ -155,11 +170,13 @@ function dragUpdate(values: any) {
     }
 
     .home-profile-links {
+      padding: 20px 0;
       border-top: 1px solid #eee;
       border-bottom: 1px solid #eee;
     }
 
-    .home-profile-container {
+    .home-profile-content {
+      width: 100%;
 
       .home-profile-title {
         width: 100%;
@@ -191,11 +208,15 @@ function dragUpdate(values: any) {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 800px) {
   .home {
 
     .home-profile {
       flex-direction: column;
+
+      .home-profile-container {
+        flex-direction: row;
+      }
       
       .home-profile-avatar {
         width: 100px;

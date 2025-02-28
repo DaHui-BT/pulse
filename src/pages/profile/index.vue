@@ -133,7 +133,7 @@ function deleteUser() {
       <section class="profile-section">
         <a-typography-title :level="3">Function Section</a-typography-title>
         <a-flex :gap="20" wrap="wrap">
-          <a-button @click="isShowArticleManager = !isShowArticleManager">Manage Article</a-button>
+          <a-button type="primary" @click="isShowArticleManager = !isShowArticleManager">Manage Article</a-button>
           <a-button @click="logout">Logout</a-button>
           <a-button danger @click="deleteUser">Delete Account</a-button>
         </a-flex>

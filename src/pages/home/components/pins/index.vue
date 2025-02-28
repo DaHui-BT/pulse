@@ -16,7 +16,8 @@ const loading = ref(false);
 const pagination = reactive<PaginationType>({
   current: 1,
   size: 10,
-  total: 0
+  total: 0,
+  pages: 0
 })
 
 watch(checkList, (newCheckList) => {
@@ -83,7 +84,7 @@ const handleOk = (e: MouseEvent) => {
         <a-checkbox
           v-model:checked="checkAll"
           @change="onCheckAllChange">
-          Check all
+          Select all
         </a-checkbox>
       </div>
       <a-list

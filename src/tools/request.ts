@@ -9,7 +9,7 @@ type Interceptors = {
   response: AxiosInterceptorManager<AxiosResponse>
 }
 
-type ResponseType<T> = {
+export type ResponseType<T> = {
   code: number
   data: T
   message: string

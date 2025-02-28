@@ -102,7 +102,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/register',
     name: 'Register',
-    component: () => import('../pages/Register.vue'),
+    component: () => import('../pages/register/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: false,
@@ -111,7 +111,7 @@ const routes: Readonly<RouteRecordRaw[]> = [
   }, {
     path: '/confirm',
     name: 'Confirm',
-    component: () => import('../pages/Confirm.vue'),
+    component: () => import('../pages/confirm/index.vue'),
     meta: {
       requiresAuth: false,
       showNavbar: false,

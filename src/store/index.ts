@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', {
     accessToken: '',
     refreshToken: '',
     user: {} as UserDocument,
-    tags: {} as TagDocument[]
+    tags: [] as TagDocument[]
   }),
   actions: {
     setAccessToken(token: string) {
