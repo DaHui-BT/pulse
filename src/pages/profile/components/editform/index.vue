@@ -6,7 +6,6 @@ import { CityType } from '../../../../types/city'
 import { UserService } from '../../../../api/UserService'
 import { UserDocument } from '../../../../entities/user'
 import { message } from 'ant-design-vue'
-import Loading from '../../../../plugins/loading'
 import { useAuthStore } from '../../../../store'
 import { useDebounce } from '../../../../utils/debounce'
 import { ValidatorRule } from 'ant-design-vue/es/form/interface'
@@ -23,6 +22,7 @@ const validating = ref<validatorStatus>('success')
 const user = ref<UserDocument>(props.user_info as UserDocument)
 const debounce = useDebounce()
 const help_message = ref<string>('')
+const spinning = ref<boolean>(false)
 const formState = reactive({
   username: user.value.username,
   email: user.value.email,
@@ -39,32 +39,31 @@ city_service.findAllCitys().then(res => {
 })
 
 async function updateUser() {
-  is_open_form.value = false
-  try {
-    Loading.show()
-    const updateUser: Partial<UserDocument> = {
-      birthday: new Date(formState.birthday),
-      username: formState.username,
-      email: formState.email,
-      gender: formState.gender,
-      profile: {
-        location: {
-          province: formState.province,
-          city: formState.city
-        }
-      },
-      description: formState.description,
-    }
-    const userResponse = await user_service.updateUser(store.user._id, updateUser)
-    console.log(userResponse)
-    if (userResponse.success) {
-      message.success(userResponse.message)
-    }
-  } catch (err) {
-    console.log(err)
-  } finally {
-    Loading.hide()
+  const updateUser: Partial<UserDocument> = {
+    birthday: new Date(formState.birthday),
+    username: formState.username,
+    email: formState.email,
+    gender: formState.gender,
+    profile: {
+      location: {
+        province: formState.province,
+        city: formState.city
+      }
+    },
+    description: formState.description,
   }
+  spinning.value = true
+  await user_service.updateUser(store.user._id, updateUser).then(res => {
+    console.log(res)
+    if (res.success && res.data) {
+      message.success(res.message)
+    }
+  }).catch(err => {
+    message.error(err.message)
+  }).finally(() => {
+    spinning.value = false
+    is_open_form.value = false
+  })
 }
 
 const city = computed(() => {
@@ -136,56 +135,57 @@ function finishFailed({ values, errorFields, outOfDate }: {
   
   <a-modal v-model:open="is_open_form" title="Edit Profile" ok-text="Comfirm" cancel-text="Cancel">
     <a-form class="edit-form" :model="formState" @finishFailed="finishFailed" @finish="updateUser">
-
-      <a-form-item name="username" label="Name" has-feedback
-        :validate-status="validating"
-        :help="help_message"
-        :rules="[{required: true, message: 'Username is requeired'}, { validator: checkUsernameExist }]">
-        <a-input v-model:value="formState.username" />
-      </a-form-item>
-      
-      <a-form-item name="email" label="Email" :rules="[{ required: true, type: 'email' }]">
-        <a-input v-model:value="formState.email" disabled />
-      </a-form-item>
-      
-      <a-form-item name="birthday" label="Birthday">
-        <a-date-picker v-model:value="formState.birthday" value-format="YYYY-MM-DD" />
-      </a-form-item>
-
-      <a-form-item name="gender" label="Gender" :rules="[{ type: 'number' }]">
-        <a-radio-group v-model:value="formState.gender">
-          <a-radio :value="0">Famale</a-radio>
-          <a-radio :value="1">Male</a-radio>
-        </a-radio-group>
-      </a-form-item>
-
-      <a-space>
-        <a-form-item name="province" label="Province" :rules="[{ required: false }]">
-          <a-select v-model:value="formState.province"
-                      @change="changeProvince"
-                      style="width: 150px"
-                      placeholder="province"
-                      :options="city_list.map(pro => ({ value: pro.province }))" />
+      <a-spin :spinning="spinning">
+        <a-form-item name="username" label="Name" has-feedback
+          :validate-status="validating"
+          :help="help_message"
+          :rules="[{required: true, message: 'Username is requeired'}, { validator: checkUsernameExist }]">
+          <a-input v-model:value="formState.username" />
+        </a-form-item>
+        
+        <a-form-item name="email" label="Email" :rules="[{ required: true, type: 'email' }]">
+          <a-input v-model:value="formState.email" disabled />
+        </a-form-item>
+        
+        <a-form-item name="birthday" label="Birthday">
+          <a-date-picker v-model:value="formState.birthday" value-format="YYYY-MM-DD" />
         </a-form-item>
 
-        <a-form-item name="city" label="City" :rules="[{ required: false }]">
-          <a-select v-model:value="formState.city"
-                      style="width: 100px"
-                      placeholder="city"
-                      :options="city?.map(c => ({ value: c }))" />
+        <a-form-item name="gender" label="Gender" :rules="[{ type: 'number' }]">
+          <a-radio-group v-model:value="formState.gender">
+            <a-radio :value="0">Famale</a-radio>
+            <a-radio :value="1">Male</a-radio>
+          </a-radio-group>
         </a-form-item>
-      </a-space>
 
-      <a-form-item name="description" label="Description">
-        <a-textarea v-model:value="formState.description" />
-      </a-form-item>
-      
-      <a-form-item>
-        <a-flex justify="end" gap="10">
-          <a-button @click="is_open_form = false">Cancel</a-button>
-          <a-button html-type="submit" type="primary">Confirm</a-button>
-        </a-flex>
-      </a-form-item>
+        <a-space>
+          <a-form-item name="province" label="Province" :rules="[{ required: false }]">
+            <a-select v-model:value="formState.province"
+                        @change="changeProvince"
+                        style="width: 150px"
+                        placeholder="province"
+                        :options="city_list.map(pro => ({ value: pro.province }))" />
+          </a-form-item>
+
+          <a-form-item name="city" label="City" :rules="[{ required: false }]">
+            <a-select v-model:value="formState.city"
+                        style="width: 100px"
+                        placeholder="city"
+                        :options="city?.map(c => ({ value: c }))" />
+          </a-form-item>
+        </a-space>
+
+        <a-form-item name="description" label="Description">
+          <a-textarea v-model:value="formState.description" />
+        </a-form-item>
+        
+        <a-form-item>
+          <a-flex justify="end" gap="10">
+            <a-button @click="is_open_form = false">Cancel</a-button>
+            <a-button html-type="submit" type="primary">Confirm</a-button>
+          </a-flex>
+        </a-form-item>
+      </a-spin>
     </a-form>
 
     <template #footer>

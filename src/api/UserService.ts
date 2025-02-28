@@ -139,6 +139,19 @@ class UserService {
     }
   }
   
+  public async existUserByEmail(email: string, options: AxiosRequestConfig = {}): Promise<ServiceResponse<UserDocument>> {
+    try {
+      const response = await this.request.get<UserDocument>(`/user/exist-email/${email}`, options)
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      } else {
+        return { success: false, error: response.message, data: response.data }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
   public async findUserInfoById(userId: string): Promise<ServiceResponse<UserDocument>> {
     try {
       const response = await this.request.get<UserDocument>(`/user/info/${userId}`)

@@ -4,6 +4,7 @@ import moment from 'moment'
 import { InteractionService } from '@api/InteractionService'
 import { InteractionDocument, OperationType } from '../../../../entities/interaction'
 import { useAuthStore } from '@store/index'
+import PaginationType from '../../../../types/pagination'
 
 const store = useAuthStore()
 const interaction_list = reactive<InteractionDocument[]>([])
@@ -12,6 +13,12 @@ const interactionService = InteractionService.getInstance()
 const initLoading = ref<boolean>(false)
 const showLoadingButton = ref<boolean>(false)
 const current_page = ref<number>(0)
+const pagination = reactive<PaginationType>({
+  current: 1,
+  size: 0,
+  total: 0,
+  pages: 1
+})
 
 onMounted(() => {
   loadData(true)

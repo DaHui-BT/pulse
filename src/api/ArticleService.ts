@@ -33,7 +33,7 @@ class ArticleService {
 
   public async findArticles(
     filter: Partial<ArticleDocument> = {},
-    pagination: PaginationOptions = {current: 1, size: 10}
+    pagination = {current: 1, size: 10}
   ): Promise<ServiceResponse<{ articles: ArticleDocument[], pagination: PaginationType }>> {
     try {
       const response = await this.request.get<{data: ArticleDocument[], pagination: PaginationType}>('/article', { params: { ...filter, ...pagination } })

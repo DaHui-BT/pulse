@@ -14,7 +14,7 @@ import Loading from '../../plugins/loading'
 import { JUMP_DELAY } from '../../constant'
 
 
-import FileTools from '../../tools/file'
+import FileTools from '../../tools/file.tool'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,7 +26,7 @@ const fileService = FileService.getInstance()
 const fileTools = new FileTools()
 const tag_list = reactive<TagDocument[]>(store.tags)
 const fileList = ref<string[]>([])
-const options = [{value: 'Article', label: 'Article'}, {value: 'File', label: "File", disabled: true}]
+const options = [{value: 'Article', label: 'Article'}, {value: 'File', label: "File"}]
 const selectOption = ref<string>('Article')
 
 interface FormState {
@@ -182,21 +182,26 @@ function onFinishFailed(values: { values: FormState,
 }
 
 // [TODO] BUG this funcion will be executed 3 times
-const handleChange = async (file: File, fileList: File[]) => {
+const handleChange = async (file: File) => {
   if (selectOption.value === 'Article') {
+    // fileList.value = 
     // formState.content = await info.file.originFileObj?.text() || formState.content
   } else if (selectOption.value === 'File') {
     // upload File
-    console.log('upload time')
-    formState.fileList = ['']
-    // console.log(info.file.originFileObj)
-    // fileTools.upload(info.file.originFileObj as File, 'file/upload-signle')
-    // formState.fileList = fileList.value
-    // console.log(fileList)
+    spinning.value = true
+    fileTools.upload(file).then(res => {
+      if (res.success && res.data) {
+        message.success(res.message)
+        if (!formState.fileList) {
+          formState.fileList = []
+        }
+        formState.fileList.push(res.data)
+      } else {
+        message.error(res.message)
+      }
+    }).catch(err => message.error(err.message))
+    .finally(() => spinning.value = false)
   }
-  console.log(file, fileList)
-  // console.log(info.file)
-  // console.log(formState)
   return false
 }
 </script>
@@ -249,7 +254,7 @@ const handleChange = async (file: File, fileList: File[]) => {
             :maxCount="1"
             accept=".md"
           >
-            <a-button ghost type="primary">
+            <a-button ghost type="primary" style="margin-bottom: 20px;">
               Upload to Analyse
             </a-button>
           </a-upload>

@@ -12,7 +12,7 @@ type CommentDocument = {
   },
   article: string,           // Reference to Article._id
   parentComment?: string | null,     // Reference to Comment._id (for nested comments)
-  childrenLen: number,
+  childrenLen?: number,
   like?: number,
   dislike?: number,
   createdAt?: Date,
@@ -33,7 +33,7 @@ type CommentAggrateDocument = {
   like?: number,
   dislike?: number,
   children: CommentAggrateDocument[],
-  childrenLen: number,
+  childrenLen?: number,
   // pagination: PaginationType,
   createdAt?: Date,
   updatedAt?: Date,

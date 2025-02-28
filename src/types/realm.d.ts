@@ -34,7 +34,7 @@ interface PaginationOptions {
 }
 
 interface ServiceResponse<T> {
-  success: boolean;
+  success?: boolean;
   data?: T;
   pagination?: PaginationType,
   message?: string

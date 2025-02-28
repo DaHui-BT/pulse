@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { SmileTwoTone } from '@ant-design/icons-vue';
+import { SmileTwoTone } from '@ant-design/icons-vue'
 </script>
 
 <template>
   <div class="repository">
     <a-typography-title :level="2">Repository</a-typography-title>
 
-    <a-result title="This function will come soon!">
+    <a-result title="This page will come soon!">
       <template #icon>
         <smile-twoTone />
       </template>

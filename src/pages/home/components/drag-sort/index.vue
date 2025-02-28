@@ -110,17 +110,16 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .drag-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
   position: relative;
   padding: 0;
   list-style: none;
-  gap: 10px;
   
   .drag-item {
-    flex-basis: 0;
     transition: transform 0.2s ease;
-    min-width: 300px;
     
     &.dragging {
       opacity: 0.3;
@@ -139,15 +138,9 @@ onBeforeUnmount(() => {
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 800px) {
   .drag-container {
-    flex-direction: column;
-    flex-wrap: nowrap;
-
-    
-    .drag-item {
-      min-width: 100%;
-    }
+    grid-template-columns: 1fr;
   }
 }
 </style>
