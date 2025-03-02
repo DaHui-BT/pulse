@@ -9,6 +9,7 @@ import { TagService } from '../../api/TagService';
 import TimeLine from '../../components/TimeLine.vue';
 import DragSort from './components/drag-sort/index.vue';
 import Pins from './components/pins/index.vue'
+import { message } from 'ant-design-vue';
 
 const store = useAuthStore()
 const ellipsis = ref(true)
@@ -22,36 +23,44 @@ const contributionsCount = computed(() => {
 })
 
 article_service.findArticles({createdBy: store.user._id}).then(res => {
-  let articleList = res.data?.articles || []
-  recommand_article_list.splice(0, recommand_article_list.length)
+  if (res.success) {
+    let articleList = res.data?.articles || []
+    recommand_article_list.splice(0, recommand_article_list.length)
 
-  recommand_article_list.push(...(articleList || []))
-})
+    recommand_article_list.push(...(articleList || []))
+  } else {
+    message.error(res.error)
+  }
+}).catch(err => message.error(err.message))
 
 tag_service.findAllTags().then(res => {
   store.setTagList(res.data || [])
-})
+}).catch(err => message.error(err.message))
 
 interaction_service.findAllInteractionsByUserId(store.user._id).then(res => {
-  let interactions = res.data || []
-  
-  for (let intera of interactions) {
-    let flag = false
-    for (let c of contributions) {
-      const date = new Date(intera.createdAt)
-      if (c.date.getFullYear() === date.getFullYear() &&
-          c.date.getMonth() === date.getMonth() && 
-          c.date.getDay() === date.getDay()) {
-        c.value += 1
-        flag = true
-        break
+  if (res.success) {
+    let interactions = res.data || []
+    
+    for (let intera of interactions) {
+      let flag = false
+      for (let c of contributions) {
+        const date = new Date(intera.createdAt)
+        if (c.date.getFullYear() === date.getFullYear() &&
+            c.date.getMonth() === date.getMonth() && 
+            c.date.getDay() === date.getDay()) {
+          c.value += 1
+          flag = true
+          break
+        }
+      }
+      if (flag === false) {
+        contributions.push({date: new Date(intera.createdAt), value: 1})
       }
     }
-    if (flag === false) {
-      contributions.push({date: new Date(intera.createdAt), value: 1})
-    }
+  } else {
+    message.error(res.error)
   }
-})
+}).catch(err => message.error(err.message))
 
 function dragUpdate(values: any) {
   recommand_article_list.splice(0, recommand_article_list.length)
@@ -68,10 +77,10 @@ function dragUpdate(values: any) {
           <a-typography-title :level="2">Overview</a-typography-title>
 
           <a-flex class="home-profile-container" vertical>
-            <a-avatar class="home-profile-avatar" src="https://qcanog5pn8uvzraw.public.blob.vercel-storage.com/static/1737987790963-2-GUfq1xsOuhu2O5upalO6uXwEDikA78.jpg">
+            <a-avatar class="home-profile-avatar" :src="store.user.avatar">
             </a-avatar>
             <a-flex vertical class="home-profile-detail">
-              <a-typography-title :level="3">DaHui</a-typography-title>
+              <a-typography-title :level="3">{{ store.user.username }}</a-typography-title>
               <a-row class="home-profile-stats">
                 <a-col :span="11">
                   <a-statistic title="Articles" :value="112893" />
@@ -90,14 +99,14 @@ function dragUpdate(values: any) {
                   CSDN
                 </a-typography-link>
                 <a-typography-link href="https://stackoverflow.com/users/24543992/hui-xiao" target="_blank">
-                  StackOverflow
+                  Stack Overflow
                 </a-typography-link>
               </a-flex>
             </a-flex>
           </a-flex>
         </a-flex>
 
-        <a-flex :gap="10" wrap="wrap" class="home-profile-content">
+        <a-flex :gap="10" vertical class="home-profile-content">
           <a-flex justify="space-between" class="home-profile-title">
             <a-typography-title :level="5">Pined</a-typography-title>
             <Pins />

@@ -1,4 +1,3 @@
-import { FileDocument } from "../entities/file"
 import { ChunkType } from "../tools/file.tool"
 import { Request, ResponseType } from "../tools/request"
 import { FileType } from "../types/file"
@@ -19,18 +18,18 @@ class FileService {
     return FileService.instance
   }
 
-  public async findFileById(fileName: string): Promise<ServiceResponse<FileDocument | null>> {
+  public async findFileById(fileName: string): Promise<ServiceResponse<FileType | null>> {
     try {
-      const file = await this.request.get<FileDocument>(`/file/${fileName}`)
+      const file = await this.request.get<FileType>(`/file/${fileName}`)
       return { success: true, data: file.data }
     } catch (error: any) {
       return { success: false, error: error.message }
     }
   }
   
-  public async findAllFiles(): Promise<ServiceResponse<FileDocument[]>> {
+  public async findAllFiles(): Promise<ServiceResponse<FileType[]>> {
     try {
-      const files = await this.request.get<FileDocument[]>('/file')
+      const files = await this.request.get<FileType[]>('/file')
       return { success: true, data: files.data }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -38,13 +37,13 @@ class FileService {
   }
 
   public async findFiles(
-    filter: Partial<FileDocument> = {},
+    filter: Partial<FileType> = {},
     pagination: PaginationOptions = {page: 0, pageSize: 10}
-  ): Promise<ServiceResponse<{ files: FileDocument[], total: number }>> {
+  ): Promise<ServiceResponse<{ files: FileType[], total: number }>> {
     try {
       // const [files, total] = await Promise.all([
-      //   this.request.find<FileDocument>(this.collection, filter, pagination),
-      //   this.request.count<FileDocument>(this.collection, filter)
+      //   this.request.find<FileType>(this.collection, filter, pagination),
+      //   this.request.count<FileType>(this.collection, filter)
       // ])
 
       return { 
@@ -78,7 +77,7 @@ class FileService {
         data: fileData
       })
       if (response.code == 200) {
-        return { success: true, data: response.data }
+        return { success: true, data: response.data, message: response.message }
       } else {
         return { success: false, error: response.message }
       }
@@ -110,7 +109,7 @@ class FileService {
 
   public async deleteById(fileName: string): Promise<ServiceResponse<boolean>> {
     try {
-      const updated = this.request.delete<FileDocument>(`/file/${fileName}`)
+      const updated = this.request.delete<FileType>(`/file/${fileName}`)
       return { success: true, data: updated }
     } catch (error: any) {
       return { success: false, error: error.message }

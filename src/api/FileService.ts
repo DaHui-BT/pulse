@@ -77,9 +77,8 @@ class FileService {
     fileData: File | FormData
   ): Promise<ServiceResponse<{fileUrl: string}>> {
     try {
-      const response = await this.request.post<{fileUrl: string}>('/file/upload-single', 
-                                                                  { data:
-                                                                    fileData,
+      const response = await this.request.post<{fileUrl: string}>('/file/upload', 
+                                                                  { data: fileData,
                                                                     headers: {
                                                                       "Content-Type": 'multipart/form-data'
                                                                     } })
