@@ -1,4 +1,4 @@
-import { BSON } from 'realm-web'
+// import { BSON } from 'realm-web'
 import imageCompression from 'browser-image-compression'
 
 async function compressImage(file: File): Promise<File | null> {

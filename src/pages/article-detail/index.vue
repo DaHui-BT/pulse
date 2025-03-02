@@ -116,7 +116,7 @@ function handleAnchorClick(e: MouseEvent) {
 }
 
 function editArticle() {
-  router.push({path: '/publish', query: {_id: article_info.value?._id + ''}})
+  router.push({path: '/publish', query: {_id: article_info.value?._id + '', type: 'Article'}})
 }
 
 const confirm = () => {

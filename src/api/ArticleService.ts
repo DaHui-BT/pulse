@@ -1,7 +1,17 @@
 import PaginationType from "../types/pagination"
 import { ArticleDocument } from "../entities/article"
 import { Request } from "../tools/request"
-import type { PaginationOptions, ServiceResponse } from "../types/realm"
+import type { ServiceResponse } from "../types/realm"
+
+export interface CreateAndUpdateArticleType {
+  _id?: string,
+  createdBy: string,
+  title: string
+  tags: string[]
+  description: string
+  content: string,
+  public: boolean
+}
 
 class ArticleService {
   private static instance: ArticleService
@@ -48,7 +58,7 @@ class ArticleService {
   }
 
   public async createArticle(
-    articleData: ArticleDocument
+    articleData: CreateAndUpdateArticleType
   ): Promise<ServiceResponse<ArticleDocument>> {
     try {
       // collections, documents
@@ -65,7 +75,7 @@ class ArticleService {
 
   public async updateArticle(
     articleId: string,
-    articleData: Partial<ArticleDocument>
+    articleData: CreateAndUpdateArticleType
   ): Promise<ServiceResponse<ArticleDocument>> {
     try {
       const response = await this.request.put<ArticleDocument>(`/article/${articleId}`, {data: articleData})

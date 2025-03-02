@@ -94,7 +94,7 @@ function checkUsernameExist(_rule: ValidatorRule, value: string) {
         reject(new Error('Username length must less than 16.'));
       } else {
         user_service.existUserByUsername(value).then(res => {
-          if (res.data) {
+          if (!res.data || value === store.user.username) {
             setValidateStatus('success', '')
             resolve(true)
           } else {
