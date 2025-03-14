@@ -1,0 +1,14 @@
+{
+  "article": "Article",
+  "repository": "Repository",
+  "publish": "Publish",
+  "chatroom": "Chatroom",
+  "profile": "Profile",
+
+  "overview": "Overview",
+  "watchers": "Watchers",
+  "recommand": "Recommand",
+  "no_recommand_article!": "No recommand article!",
+  "contributions": "Contributions",
+  "contributions_in_the_last_year": "contributions in the last year"
+}

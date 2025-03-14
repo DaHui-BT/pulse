@@ -2,6 +2,7 @@
 import { ref, reactive, onBeforeMount, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
+import dayjs from 'dayjs'
 
 import { ArticleService } from '../../api/ArticleService'
 import { UserService } from '../../api/UserService'
@@ -161,10 +162,12 @@ const shareHandler = () => {
         @back="() => $router.go(-1)">
         
         <template #extra v-if="article_info.createdBy == current_user?._id">
-          <a-button type="primary" @click="editArticle">Edit</a-button>
+          <!-- <a-button type="primary" @click="editArticle">Edit</a-button> -->
+          <a-button type="primary" @click="editArticle">修改</a-button>
 
           <a-popconfirm title="Ready to delete?" @confirm="confirm" @cancel="cancel">
-            <a-button type="primary" danger>Delete</a-button>
+            <!-- <a-button type="primary" danger>Delete</a-button> -->
+            <a-button type="primary" danger>删除</a-button>
           </a-popconfirm>
         </template>
 
@@ -172,6 +175,22 @@ const shareHandler = () => {
           <a-tag color="blue" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
       </a-page-header>
+      
+      <a-flex gap="20" wrap="wrap" class="repository-function" justify="flex-end">
+        <a-tooltip>
+          <!-- <template #title>Create date</template> -->
+          <template #title>创建时间</template>
+          <!-- <a-typography-text type="secondary">Created at: {{ dayjs(article_info?.createdAt).format('YYYY-MM-DD') }}</a-typography-text> -->
+          <a-typography-text type="secondary">创建于: {{ dayjs(article_info?.createdAt).format('YYYY-MM-DD') }}</a-typography-text>
+        </a-tooltip>
+        
+        <a-tooltip>
+          <!-- <template #title>Update date</template> -->
+          <template #title>更新时间</template>
+          <!-- <a-typography-text type="secondary">Update at: {{ dayjs(article_info?.updatedAt).format('YYYY-MM-DD') }}</a-typography-text> -->
+          <a-typography-text type="secondary">更新于: {{ dayjs(article_info?.updatedAt).format('YYYY-MM-DD') }}</a-typography-text>
+        </a-tooltip>
+      </a-flex>
       
       <a-anchor :items="tocs" :affix="false" wrapperClass="article-toc"
                   @click.prevent="handleAnchorClick" 

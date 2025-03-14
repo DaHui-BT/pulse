@@ -9,12 +9,14 @@ import './style.css'
 
 import App from './App.vue'
 import { VMdEditor, VMdPreview } from './config/MarkdownConfig'
+import i18n from './config/i18n'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App)
 app.use(pinia)
+    .use(i18n)
     .use(router)
     .use(VMdEditor)
     .use(VMdPreview)

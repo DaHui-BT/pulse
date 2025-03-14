@@ -244,7 +244,8 @@ function submitHandler() {
   
   <a-spin :spinning="spinning">
     <a-flex justify="center" v-if="comment_list.length < pagination.total ">
-      <a-button type="link" @click="loadMore">loadMore</a-button>
+      <!-- <a-button type="link" @click="loadMore">loadMore</a-button> -->
+      <a-button type="link" @click="loadMore">加载更多</a-button>
     </a-flex>
   </a-spin>
 
@@ -255,7 +256,8 @@ function submitHandler() {
 
     <template #content>
       <a-flex justify="space-between" :gap="10" class="replay-placeholder" v-if="replay_placeholder">
-        <a-typography-text type="secondary">Replay to: {{ replay_placeholder }}</a-typography-text>
+        <!-- <a-typography-text type="secondary">Replay to: {{ replay_placeholder }}</a-typography-text> -->
+        <a-typography-text type="secondary">回复: {{ replay_placeholder }}</a-typography-text>
         <a-typography-link type="secondary" class="close" @click="closeReplayHandler">x</a-typography-link>
       </a-flex>
 
@@ -270,10 +272,15 @@ function submitHandler() {
 
           <a-form-item>
             <a-tooltip :title="store.isAuthenticated ? 'comment' : 'login for comment'">
-              <a-button html-type="submit" :loading="submit_loading"
+              <!-- <a-button html-type="submit" :loading="submit_loading"
                         type="primary" @click="submitHandler"
                         :disabled="!store.isAuthenticated">
                 Add Comment
+              </a-button> -->
+              <a-button html-type="submit" :loading="submit_loading"
+                        type="primary" @click="submitHandler"
+                        :disabled="!store.isAuthenticated">
+                添加评论
               </a-button>
             </a-tooltip>
           </a-form-item>

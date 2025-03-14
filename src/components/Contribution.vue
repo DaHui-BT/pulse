@@ -294,7 +294,7 @@ onBeforeUnmount(() => {
       <canvas class="contribution-canvas" ref="canvas"></canvas>
     </div>
     <div class="color-table">
-      <p>Learn how we count contributions</p>
+      <!-- <p>Learn how we count contributions</p> -->
       <div class="color-table-container">
         less
         <span class="color-table-item" v-for="color in colorTable"

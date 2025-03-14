@@ -163,9 +163,12 @@ function loadMoreChildComment(comment: CommentAggrateDocument) {
           {{ comment.dislike }}
         </span>
       </span>
-      <span key="comment-nested-reply-to" @click.prevent="replay(comment)">Reply to</span>
+      <!-- <span key="comment-nested-reply-to" @click.prevent="replay(comment)">Reply to</span> -->
+      <span key="comment-nested-reply-to" @click.prevent="replay(comment)">回复</span>
+      <!-- <span key="comment-nested-delete" v-if="store.user._id === comment.author?.userId"
+                                        @click.prevent="deleteComment(comment._id)">Delete</span> -->
       <span key="comment-nested-delete" v-if="store.user._id === comment.author?.userId"
-                                        @click.prevent="deleteComment(comment._id)">Delete</span>
+                                        @click.prevent="deleteComment(comment._id)">删除</span>
     </template>
     <template #content>
       <p>{{ comment?.content }}</p>
@@ -190,7 +193,8 @@ function loadMoreChildComment(comment: CommentAggrateDocument) {
       
       <a-spin :spinning="spinning">
         <a-flex justify="center" v-if="comment.children.length < pagination.total">
-          <a-button type="link" @click="loadMoreChildComment(comment)">loadMore</a-button>
+          <!-- <a-button type="link" @click="loadMoreChildComment(comment)">loadMore</a-button> -->
+          <a-button type="link" @click="loadMoreChildComment(comment)">加载更多</a-button>
         </a-flex>
       </a-spin>
     </div>

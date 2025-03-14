@@ -1,7 +1,8 @@
 import { ChunkType } from "../tools/file.tool"
 import { Request, ResponseType } from "../tools/request"
 import { FileType } from "../types/file"
-import { PaginationOptions, ServiceResponse } from "../types/realm"
+import PaginationType from "../types/pagination"
+import { ServiceResponse } from "../types/realm"
 
 class FileService {
   private static instance: FileService
@@ -38,18 +39,19 @@ class FileService {
 
   public async findFiles(
     filter: Partial<FileType> = {},
-    pagination: PaginationOptions = {page: 0, pageSize: 10}
-  ): Promise<ServiceResponse<{ files: FileType[], total: number }>> {
+    pagination = {current: 0, size: 10}
+  ): Promise<ServiceResponse<{ files: FileType[], pagination: PaginationType } | null>> {
     try {
-      // const [files, total] = await Promise.all([
-      //   this.request.find<FileType>(this.collection, filter, pagination),
-      //   this.request.count<FileType>(this.collection, filter)
-      // ])
-
-      return { 
-        success: true, 
-        // data: { files, total } 
-        data: { files: [], total: 0 } 
+      const res = await this.request.get<{data: FileType[], pagination: PaginationType}>('/file', {
+        params: {
+          ...filter,
+          ...pagination
+        }
+      })
+      if (res.code === 200) {
+        return {success: true, data: { files: res.data.data, pagination: res.data.pagination}}
+      } else {
+        return { success: false, data: null }
       }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -71,9 +73,9 @@ class FileService {
   
   public async uploadFile(
     fileData: FileType
-  ): Promise<ServiceResponse<boolean>> {
+  ): Promise<ServiceResponse<string>> {
     try {
-      const response = await this.request.post<boolean>('/file', {
+      const response = await this.request.post<string>('/file', {
         data: fileData
       })
       if (response.code == 200) {
@@ -107,10 +109,37 @@ class FileService {
     }
   }
 
+  public async updateFile(
+    fileId: string,
+    fileData: Partial<FileType>
+  ): Promise<ServiceResponse<string>> {
+    try {
+      const response = await this.request.put<string>(`/file/${fileId}`, {
+        data: fileData
+      })
+      if (response.code == 200) {
+        return { success: true, data: response.data, message: response.message }
+      } else {
+        return { success: false, error: response.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
   public async deleteById(fileName: string): Promise<ServiceResponse<boolean>> {
     try {
-      const updated = this.request.delete<FileType>(`/file/${fileName}`)
-      return { success: true, data: updated }
+      const deleted = await this.request.delete<{data: boolean, message: string}>(`/file/${fileName}`)
+      return { success: true, data: deleted.data, message: deleted.message }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }  
+
+  public async deletePerpetualById(fileName: string): Promise<ServiceResponse<boolean>> {
+    try {
+      const deleted = await this.request.delete<{data: boolean, message: string}>(`/file/${fileName}`)
+      return { success: true, data: deleted.data, message: deleted.message }
     } catch (error: any) {
       return { success: false, error: error.message }
     }

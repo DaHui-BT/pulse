@@ -2,13 +2,15 @@
 import { defineStore } from 'pinia'
 import { UserDocument } from '../entities/user'
 import { TagDocument } from '../entities/tag'
+import { CityType } from '../types/city'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     accessToken: '',
     refreshToken: '',
     user: {} as UserDocument,
-    tags: [] as TagDocument[]
+    tags: [] as TagDocument[],
+    cities: [] as CityType[]
   }),
   actions: {
     setAccessToken(token: string) {
@@ -42,10 +44,21 @@ export const useAuthStore = defineStore('auth', {
     setTagList(tagList: TagDocument[]) {
       this.tags = tagList
     },
+    setCityList(cities: CityType[]) {
+      this.cities = cities
+    },
     getExpireTime(token: string): Date {
-      let payload = token.split('.')[1]
-      payload = atob(payload)
-      const exp = parseInt(JSON.parse(payload).exp) * 1000
+      let exp = null
+      try {
+        console.log(token)
+        let payload = token.split('.')[1]
+        console.log(payload)
+        payload = atob(payload)
+        exp = parseInt(JSON.parse(payload).exp) * 1000
+      } catch (e) {
+        console.log(e)
+        exp = new Date().getTime() + 100000
+      }
       return new Date(exp)
     }
   },

@@ -12,6 +12,8 @@ const loading = ref<boolean>(true)
 const articleService = ArticleService.getInstance()
 const articleList = reactive<ArticleDocument[]>([])
 const searchValue = ref<string>('')
+const searchType = ref<string>()
+const searchOptions = reactive<{value: string, label: string}[]>(store.tags.map(t => ({ value: t._id, label: t.name })))
 const pagination = reactive<PaginationType>({
   current: 1,
   size: 10,
@@ -28,7 +30,7 @@ async function loadData(filter: Partial<ArticleDocument> = {}) {
   }
   articleList.splice(0, articleList.length)
   articleList.push(...Array(pagination.size).fill({} as ArticleDocument))
-  articleService.findArticles(filter, {current: pagination.current, size: pagination.size}).then(res => {
+  articleService.findArticleInfoList(filter, {current: pagination.current, size: pagination.size}).then(res => {
     if (res.success && res.data) {
       articleList.splice(0, articleList.length)
       articleList.push(...(res.data.articles || []))
@@ -46,11 +48,16 @@ async function loadData(filter: Partial<ArticleDocument> = {}) {
 
 function onSearch() {
   pagination.current = 1
-  if (searchValue.value.length === 0) {
-    loadData()
-  } else {
-    loadData({title: searchValue.value})
+  let query: Partial<ArticleDocument> = {}
+
+  if (searchType.value && searchType.value.length > 0) {
+    query.tags = [searchType.value + '']
   }
+  if (searchValue.value.length > 0) {
+    query.title = searchValue.value
+  }
+  
+  loadData(query)
 }
 
 function changePage(page_number: number) {
@@ -70,31 +77,54 @@ const getTagName = (id: string) => {
 
 <template>
   <a-form>
-    <a-form-item>
-      <a-input-search
-        v-model:value.trim="searchValue"
-        placeholder="input search text"
-        @search="onSearch"></a-input-search>
-    </a-form-item>
+    <a-flex gap="10">
+      <a-form-item>
+        <!-- <a-select
+          v-model:value="searchType"
+          mode="tags"
+          style="min-width: 150px"
+          placeholder="Article Tag"
+          :options="searchOptions"
+        ></a-select> -->
+        <a-select
+          v-model:value="searchType"
+          mode="tags"
+          style="min-width: 150px"
+          placeholder="文章标签"
+          :options="searchOptions"
+        ></a-select>
+      </a-form-item>
+      <a-form-item>
+        <!-- <a-input-search
+          v-model:value.trim="searchValue"
+          placeholder="input search text"
+          @search="onSearch"></a-input-search> -->
+          
+        <a-input-search
+          v-model:value.trim="searchValue"
+          placeholder="输入搜索文本"
+          @search="onSearch"></a-input-search>
+      </a-form-item>
+    </a-flex>
   </a-form>
 
   <a-list item-layout="vertical" size="large" :data-source="articleList">
     <template #renderItem="{ item }">
       <a-list-item :key="item.title" class="content-item">
-        <template v-if="!loading" #actions>
+        <template v-if="!loading && item.statistics" #actions>
           <span>
             <component :is="StarOutlined" style="margin-right: 8px"></component>
-            {{ item.statistics.collections }}
+            {{ item.statistics?.collections }}
           </span>
           
           <span>
             <component :is="LikeOutlined" style="margin-right: 8px"></component>
-            {{ item.statistics.stars }}
+            {{ item.statistics?.stars }}
           </span>
           
           <span>
             <component :is="MessageOutlined" style="margin-right: 8px"></component>
-            {{ item.statistics.comments }}
+            {{ item.statistics?.comments }}
           </span>
         </template>
 
