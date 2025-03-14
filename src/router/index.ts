@@ -141,7 +141,8 @@ router.beforeEach((to, from, next) => {
     if (store.isAuthenticated) {
       next()
     } else {
-      message.warning('Have not login, login first')
+      // message.warning('Have not login, login first')
+      message.warning('还没有登录，请先登录')
       setTimeout(() => {
         next({
           path: '/login',

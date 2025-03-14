@@ -40,6 +40,32 @@ class ArticleService {
       return { success: false, error: error.message }
     }
   }
+  
+  public async findArticleByIds(articleIds: string[]): Promise<ServiceResponse<ArticleDocument[]>> {
+    try {
+      const response = await this.request.get<ArticleDocument[]>(`/article-ids`, { params: articleIds })
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      } else {
+        return { success: false, error: response.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async findArticleInfoByIds(articleIds: string[]): Promise<ServiceResponse<ArticleDocument[]>> {
+    try {
+      const response = await this.request.get<ArticleDocument[]>(`/article/info-ids`, { params: articleIds })
+      if (response.code == 200) {
+        return { success: true, data: response.data }
+      } else {
+        return { success: false, error: response.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
 
   public async findArticles(
     filter: Partial<ArticleDocument> = {},
@@ -47,6 +73,22 @@ class ArticleService {
   ): Promise<ServiceResponse<{ articles: ArticleDocument[], pagination: PaginationType }>> {
     try {
       const response = await this.request.get<{data: ArticleDocument[], pagination: PaginationType}>('/article', { params: { ...filter, ...pagination } })
+      if (response.code == 200) {
+        return { success: true, data: { articles: response.data.data, pagination: response.data.pagination }}
+      } else {
+        return { success: false, error: response.message }
+      }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+  
+  public async findArticleInfoList(
+    filter: Partial<ArticleDocument> = {},
+    pagination = {current: 1, size: 10}
+  ): Promise<ServiceResponse<{ articles: ArticleDocument[], pagination: PaginationType }>> {
+    try {
+      const response = await this.request.get<{data: ArticleDocument[], pagination: PaginationType}>('/article/info', { params: { ...filter, ...pagination } })
       if (response.code == 200) {
         return { success: true, data: { articles: response.data.data, pagination: response.data.pagination }}
       } else {

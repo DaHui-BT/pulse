@@ -4,9 +4,19 @@ import { ArticleService } from '../../../../api/ArticleService';
 import { useAuthStore } from '../../../../store';
 import PaginationType from '../../../../types/pagination';
 import { ArticleDocument } from '../../../../entities/article';
+import { UserService } from '../../../../api/UserService';
+import { message } from 'ant-design-vue';
 
+
+const props = defineProps({
+  checkedIdList: {
+    type: Array<string>,
+    required: true
+  }
+})
 const store = useAuthStore()
 const article_service = ArticleService.getInstance()
+const userService = UserService.getInstance()
 const open = ref<boolean>(false);
 const article_list = reactive<ArticleDocument[]>([])
 const checkList = reactive<{article_id: string, checked: boolean}[]>([])
@@ -41,10 +51,10 @@ const loadData = async (clear: boolean = false) => {
     checkList.splice(0, checkList.length)
   }
   
-  await article_service.findArticles({ createdBy: store.user._id },
+  await article_service.findArticleInfoList({ createdBy: store.user._id },
     { current: pagination.current, size: pagination.size }).then(res => {
     article_list.push(...(res.data?.articles || []))
-    checkList.push(...(res.data?.articles || []).map(item => ({ article_id: item._id + '', checked: false })))
+    checkList.push(...(res.data?.articles || []).map(item => ({ article_id: item._id + '', checked: props.checkedIdList.includes(item._id + '') })))
     if (res.data?.pagination) {
       pagination.current = res.data.pagination.current
       pagination.size = res.data.pagination.size
@@ -73,18 +83,32 @@ const onLoadMore = async () => {
 const handleOk = (e: MouseEvent) => {
   open.value = false;
   console.log(checkList)
+  const checkIds = checkList.filter(c => c.checked).map(c => c.article_id)
+
+  if (checkIds.join() !== props.checkedIdList.join()) {
+    userService.updateUser(store.user._id, { recommands: checkIds }).then(res => {
+      if (res.success) {
+        message.success(res.message)
+      } else {
+        message.error(res.error)
+      }
+    }).catch(err => message.error(err.message))
+  }
 };
 </script>
 
 <template>
   <div class="pins">
-    <a-button type="link" @click="showModal">Customize your pins</a-button>
-    <a-modal v-model:open="open" title="Customize Pins" @ok="handleOk">
+    <!-- <a-button type="link" @click="showModal">Customize your pins</a-button> -->
+    <a-button type="link" @click="showModal">定制化你的推荐</a-button>
+    <!-- <a-modal v-model:open="open" title="Customize Pins" @ok="handleOk"> -->
+    <a-modal v-model:open="open" title="定制化你的推荐" @ok="handleOk" okText="确认" cancelText="取消">
       <div>
         <a-checkbox
           v-model:checked="checkAll"
           @change="onCheckAllChange">
-          Select all
+          <!-- Select all -->
+          全选
         </a-checkbox>
       </div>
       <a-list
@@ -98,7 +122,8 @@ const handleOk = (e: MouseEvent) => {
             v-if="!initLoading && !loading"
             :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }"
           >
-            <a-button @click="onLoadMore">loading more</a-button>
+            <!-- <a-button @click="onLoadMore">loading more</a-button> -->
+            <a-button @click="onLoadMore">加载更多</a-button>
           </div>
         </template>
         <template #renderItem="{ item, index }">

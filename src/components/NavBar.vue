@@ -2,45 +2,66 @@
 import { ref, reactive, onMounted, watch, computed, h, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { MenuUnfoldOutlined } from '@ant-design/icons-vue'
+import { MenuProps } from 'ant-design-vue'
+import { createI18n, useI18n } from 'vue-i18n'
 
 
-type NavBarType = {label: string, key: string, name: string, path: string}
+// type NavBarType = {label: string, key: string, name: string, path: string, icon: ''}
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 let show_menu_collpase = ref<boolean>(window.innerWidth <= 400)
 const current_path = ref<string[]>([])
 
-const navbar_list = reactive<NavBarType[]>([{
-  label: 'Article',
-  key: 'Article',
-  name: 'Article',
-  path: '/article'
-},
-{
-  label: 'Repository',
-  key: 'Repository',
-  name: 'Repository',
-  path: '/repository'
-},
-{
-  label: 'Publish',
-  key: 'Publish',
-  name: 'Publish',
-  path: '/publish'
-},
-// {
-//   label: 'ChatRoom',
-//   key: 'ChatRoom',
-//   name: 'ChatRoom',
-//   path: '/chat-room'
-// },
-{
-  label: 'Profile',
-  key: 'Profile',
-  name: 'Profile',
-  path: '/profile'
-}])
+const navbar_list = ref<MenuProps['items']>([
+  {
+    // label: 'Article',
+    // label: '文章',
+    label: t('article'),
+    key: 'Article',
+    // name: 'Article',
+    // path: '/article'
+  },
+  {
+    // label: 'Repository',
+    label: t('repository'),
+    key: 'Repository',
+    // name: 'Repository',
+    // path: '/repository'
+  },
+  {
+    // label: 'Publish',
+    // label: '发布',
+    label: t('publish'),
+    key: 'Publish',
+    // name: 'Publish',
+    // path: '/publish'
+  },
+  // {
+  //   label: 'ChatRoom',
+    // label: t('chatroom'),
+  //   key: 'ChatRoom',
+  //   name: 'ChatRoom',
+  //   path: '/chat-room'
+  // },
+  {
+    // label: 'Profile',
+    // label: '个人',
+    label: t('profile'),
+    key: 'Profile',
+    // name: 'Profile',
+    // path: '/profile'
+  },
+  // {
+  //   label: '',
+  //   key: 'Mode',
+  //   // icon: h('a-switch', { checked: 'checked'})
+  //   // name: 'Mode',
+  //   // icon: h('<a-switch v-model:checked="checked" />'),
+  //   // path: '/profile'
+  // }
+])
 
 watch(current_path, (newVal) => {
   router.push({
@@ -49,6 +70,7 @@ watch(current_path, (newVal) => {
 })
 
 watch(() => route.name, (newVal) => {
+  console.log(newVal)
   if (newVal) {
     current_path.value.splice(0, 1, newVal.toString())
   }
@@ -59,7 +81,7 @@ const collpaseItems = computed(() => {
     key: '',
     label: '',
     icon: h(MenuUnfoldOutlined, {style: {fontSize: '20px'}}),
-    children: navbar_list
+    children: navbar_list.value
   }]
 })
 
@@ -105,7 +127,7 @@ onUnmounted(() => {
               :items="collpaseItems"/>
 
       <a-menu v-else v-model:selectedKeys="current_path" mode="horizontal"
-              :items="navbar_list"/>
+              :items="navbar_list" style="margin-right: 20px;"/>
 
     </a-flex>
     <div class="nav-bar-fake"></div>

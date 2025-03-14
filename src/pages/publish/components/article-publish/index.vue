@@ -139,34 +139,53 @@ function onFinishFailed(values: { values: CreateAndUpdateArticleType,
     <a-spin :spinning="spinning">
       <a-form :model="formState" name="norm" @finish="onFinish" @finishFailed="onFinishFailed">
         <a-form-item>
-          <a-button :disabled="disabled" type="primary" @click="onFinish">Publish</a-button>
+          <a-button :disabled="disabled" type="primary" @click="onFinish">发布</a-button>
+          <!-- <a-button :disabled="disabled" type="primary" @click="onFinish">Publish</a-button> -->
         </a-form-item>
 
-        <a-form-item name="title" :rules="[{ required: true, message: 'Please input your title!' }, { max: 50, min: 5}]">
+        <!-- <a-form-item name="title" :rules="[{ required: true, message: 'Please input your title!' }, { max: 50, min: 5}]">
           <a-input placeholder="Input your title" size="large" v-model:value="formState.title"></a-input>
+        </a-form-item> -->
+        <a-form-item name="title" :rules="[{ required: true, message: '请输入标题!' }, { max: 50, min: 5}]">
+          <a-input placeholder="请输入标题" size="large" v-model:value="formState.title"></a-input>
         </a-form-item>
 
         <a-flex gap="20" align="center" wrap="wrap">
           <a-form-item name="tags" :rules="[{ required: true, max: 5, min: 1, type: 'array' }]">
-            <a-select
+            <!-- <a-select
                 size="large"
                 v-model:value="formState.tags"
                 :options="tag_list.map(tag => ({label: tag.name, value: tag._id + ''}))"
                 mode="multiple"
                 placeholder="select your tag"
+                style="min-width: 200px"></a-select> -->
+                
+            <a-select
+                size="large"
+                v-model:value="formState.tags"
+                :options="tag_list.map(tag => ({label: tag.name, value: tag._id + ''}))"
+                mode="multiple"
+                placeholder="请选择标签"
                 style="min-width: 200px"></a-select>
           </a-form-item>
           
-          <a-form-item name="isPublic" :rules="[{ required: true, message: 'Please input your permission!' }]">
+          <!-- <a-form-item name="isPublic" :rules="[{ required: true, message: 'Please input your permission!' }]">
             <a-switch v-model:checked="formState.public" checked-children="public" un-checked-children="private" />
+          </a-form-item> -->
+          <a-form-item name="isPublic">
+            <a-switch v-model:checked="formState.public" :checked-children="$t('public')" :un-checked-children="$t('private')" />
           </a-form-item>
         </a-flex>
 
-        <a-form-item name="description" :rules="[{ required: true, message: 'Please input your description!' }, { max: 150, min: 30}]">
+        <!-- <a-form-item name="description" :rules="[{ required: true, message: 'Please input your description!' }, { max: 150, min: 30}]">
           <a-textarea size="large" placeholder="Input your description" class="publish-describe" v-model:value="formState.description"></a-textarea>
+        </a-form-item> -->
+        <a-form-item name="description" :rules="[{ required: true, message: '请输入描述信息!' }, { max: 150, min: 30}]">
+          <a-textarea size="large" placeholder="请输入描述信息" class="publish-describe" v-model:value="formState.description"></a-textarea>
         </a-form-item>
 
-        <a-form-item name="content" :rules="[{ required: true, message: 'Please input your content!' }]">
+        <!-- <a-form-item name="content" :rules="[{ required: true, message: 'Please input your content!' }]"> -->
+        <a-form-item name="content" :rules="[{ required: true, message: '请输入内容!' }]">
           <a-upload
             v-model:file-list="fileList"
             name="file"
@@ -175,7 +194,8 @@ function onFinishFailed(values: { values: CreateAndUpdateArticleType,
             accept=".md"
           >
             <a-button ghost type="primary" style="margin-bottom: 20px;">
-              Upload to Analyse
+              <!-- Upload to Analyse -->
+              上传并解析
             </a-button>
           </a-upload>
 

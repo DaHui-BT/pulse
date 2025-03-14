@@ -9,6 +9,7 @@ import { message } from 'ant-design-vue'
 import { useAuthStore } from '../../../../store'
 import { useDebounce } from '../../../../utils/debounce'
 import { ValidatorRule } from 'ant-design-vue/es/form/interface'
+import cities from '../../../../constant/city.json'
 
 const props = defineProps({ user_info: { type: Object as () => UserDocument }})
 type validatorStatus = 'validating' | 'warning' | 'error' | 'success'
@@ -33,10 +34,13 @@ const formState = reactive({
   description: user.value.description
 })
 
-city_service.findAllCitys().then(res => {
-  city_list.splice(0, city_list.length)
-  city_list.push(...(res.data || []))
-})
+// city_service.findAllCitys().then(res => {
+//   city_list.splice(0, city_list.length)
+//   city_list.push(...(res.data || []))
+// })
+
+city_list.splice(0, city_list.length)
+city_list.push(...cities.province_list)
 
 async function updateUser() {
   const updateUser: Partial<UserDocument> = {
@@ -131,58 +135,62 @@ function finishFailed({ values, errorFields, outOfDate }: {
 </script>
 
 <template>
-  <a-button type="primary" class="profile-button" @click="() => is_open_form = true">Edit</a-button>
+  <!-- <a-button type="primary" class="profile-button" @click="() => is_open_form = true">Edit</a-button> -->
+  <a-button type="primary" class="profile-button" @click="() => is_open_form = true">{{ $t('modify') }}</a-button>
   
-  <a-modal v-model:open="is_open_form" title="Edit Profile" ok-text="Comfirm" cancel-text="Cancel">
+  <!-- <a-modal v-model:open="is_open_form" title="Edit Profile" ok-text="Comfirm" cancel-text="Cancel"> -->
+  <a-modal v-model:open="is_open_form" :title="$t('modify_info')" :ok-text="$t('confirm')" :cancel-text="$t('cancel')">
     <a-form class="edit-form" :model="formState" @finishFailed="finishFailed" @finish="updateUser">
       <a-spin :spinning="spinning">
-        <a-form-item name="username" label="Name" has-feedback
+        <a-form-item name="username" :label="$t('name')" has-feedback
           :validate-status="validating"
           :help="help_message"
           :rules="[{required: true, message: 'Username is requeired'}, { validator: checkUsernameExist }]">
           <a-input v-model:value="formState.username" />
         </a-form-item>
         
-        <a-form-item name="email" label="Email" :rules="[{ required: true, type: 'email' }]">
+        <a-form-item name="email" :label="$t('email')" :rules="[{ required: true, type: 'email' }]">
           <a-input v-model:value="formState.email" disabled />
         </a-form-item>
         
-        <a-form-item name="birthday" label="Birthday">
+        <a-form-item name="birthday" :label="$t('birthday')">
           <a-date-picker v-model:value="formState.birthday" value-format="YYYY-MM-DD" />
         </a-form-item>
 
-        <a-form-item name="gender" label="Gender" :rules="[{ type: 'number' }]">
+        <a-form-item name="gender" :label="$t('gender')" :rules="[{ type: 'number' }]">
           <a-radio-group v-model:value="formState.gender">
-            <a-radio :value="0">Famale</a-radio>
-            <a-radio :value="1">Male</a-radio>
+            <a-radio :value="0">{{ $t('female') }}</a-radio>
+            <a-radio :value="1">{{ $t('male') }}</a-radio>
           </a-radio-group>
         </a-form-item>
 
         <a-space>
-          <a-form-item name="province" label="Province" :rules="[{ required: false }]">
+          <a-form-item name="province" :label="$t('province')" :rules="[{ required: false }]">
             <a-select v-model:value="formState.province"
                         @change="changeProvince"
                         style="width: 150px"
-                        placeholder="province"
+                        :placeholder="$t('province')"
                         :options="city_list.map(pro => ({ value: pro.province }))" />
           </a-form-item>
 
-          <a-form-item name="city" label="City" :rules="[{ required: false }]">
+          <a-form-item name="city" :label="$t('city')" :rules="[{ required: false }]">
             <a-select v-model:value="formState.city"
                         style="width: 100px"
-                        placeholder="city"
+                        :placeholder="$t('city')"
                         :options="city?.map(c => ({ value: c }))" />
           </a-form-item>
         </a-space>
 
-        <a-form-item name="description" label="Description">
+        <a-form-item name="description" :label="$t('description')">
           <a-textarea v-model:value="formState.description" />
         </a-form-item>
         
         <a-form-item>
           <a-flex justify="end" gap="10">
-            <a-button @click="is_open_form = false">Cancel</a-button>
-            <a-button html-type="submit" type="primary">Confirm</a-button>
+            <!-- <a-button @click="is_open_form = false">Cancel</a-button>
+            <a-button html-type="submit" type="primary">Confirm</a-button> -->
+            <a-button @click="is_open_form = false">{{ $t('cancel') }}</a-button>
+            <a-button html-type="submit" type="primary">{{ $t('confirm') }}</a-button>
           </a-flex>
         </a-form-item>
       </a-spin>

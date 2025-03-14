@@ -36,6 +36,7 @@ interface UserDocument {
   },
   subscribers: string[],  // References to User._id
   subscribing: string[],  // References to User._id
+  recommands: string[],
   statistics: {
     articlesCount: number,
     commentsCount: number,

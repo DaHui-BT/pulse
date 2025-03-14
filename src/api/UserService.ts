@@ -102,7 +102,7 @@ class UserService {
   
   public async findUserById(userId: string): Promise<ServiceResponse<UserDocument>> {
     try {
-      const response = await this.request.get<UserDocument>(`/user/self/${userId}`, { headers: { Authorization: this.store.accessToken }})
+      const response = await this.request.get<UserDocument>(`/user/self/${userId}`, { headers: { Authorization: 'Bearer ' + this.store.accessToken }})
       if (response.code == 200) {
         return { success: true, data: response.data }
       } else {

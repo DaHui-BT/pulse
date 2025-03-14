@@ -1,5 +1,7 @@
 import { FileDocument } from "../entities/file"
 import { Request } from "../tools/request"
+import { FileType } from "../types/file"
+import PaginationType from "../types/pagination"
 import { PaginationOptions, ServiceResponse } from "../types/realm"
 
 class FileService {
@@ -36,19 +38,20 @@ class FileService {
   }
 
   public async findFiles(
-    filter: Partial<FileDocument> = {},
-    pagination: PaginationOptions = {page: 0, pageSize: 10}
-  ): Promise<ServiceResponse<{ files: FileDocument[], total: number }>> {
+    filter: Partial<FileType> = {},
+    pagination = {current: 0, size: 10}
+  ): Promise<ServiceResponse<{ files: FileType[], pagination: PaginationType } | null>> {
     try {
-      // const [files, total] = await Promise.all([
-      //   this.request.find<FileDocument>(this.collection, filter, pagination),
-      //   this.request.count<FileDocument>(this.collection, filter)
-      // ])
-
-      return { 
-        success: true, 
-        // data: { files, total } 
-        data: { files: [], total: 0 } 
+      const res = await this.request.get<{data: FileType[], pagination: PaginationType}>('/file', {
+        data: {
+          ...filter,
+          ...pagination
+        }
+      })
+      if (res.code === 200) {
+        return {success: true, data: { files: res.data.data, pagination: res.data.pagination}}
+      } else {
+        return { success: false, data: null }
       }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -75,9 +78,9 @@ class FileService {
 
   public async uploadFile(
     fileData: File | FormData
-  ): Promise<ServiceResponse<{fileUrl: string}>> {
+  ): Promise<ServiceResponse<string>> {
     try {
-      const response = await this.request.post<{fileUrl: string}>('/file/upload', 
+      const response = await this.request.post<string>('/file/upload', 
                                                                   { data: fileData,
                                                                     headers: {
                                                                       "Content-Type": 'multipart/form-data'

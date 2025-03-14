@@ -12,7 +12,8 @@ const interactionService = InteractionService.getInstance()
 const pagination = reactive<PaginationType>({
   current: 1,
   size: 3,
-  total: 0
+  total: 0,
+  pages: 0
 })
 
 const initLoading = ref<boolean>(false)
@@ -32,6 +33,7 @@ function loadData(isClear: boolean = false) {
       pagination.current = res.data.pagination.current
       pagination.size = res.data.pagination.size
       pagination.total = res.data.pagination.total
+      pagination.pages = res.data.pagination.pages
       if (res.data.pagination.total == interaction_list.length) {
         showLoadingButton.value = false
       } else {
@@ -80,7 +82,8 @@ function operateType(operate: OperationType) {
           v-if="!initLoading && showLoadingButton"
           :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }"
         >
-          <a-button @click="onLoadMore">loading more</a-button>
+          <!-- <a-button @click="onLoadMore">loading more</a-button> -->
+          <a-button @click="onLoadMore">{{ $t('loading_more') }}</a-button>
         </div>
       </template>
 

@@ -10,6 +10,7 @@ import { JUMP_DELAY } from '../../constant'
 import Loading from '../../plugins/loading'
 import { ValidatorRule } from 'ant-design-vue/es/form/interface'
 import { useDebounce } from '../../utils/debounce'
+import { useI18n } from 'vue-i18n'
 
 
 interface FormState {
@@ -18,6 +19,7 @@ interface FormState {
   password: string
 }
 
+const { t } = useI18n()
 const router = useRouter()
 const debounce = useDebounce()
 const user_service = UserService.getInstance()
@@ -108,16 +110,16 @@ function resendConfirm() {
         @finish="onFinish"
         @finishFailed="onFinishFailed"
       >
-        <h2 class="register-form-title">Sign up</h2>
+        <h2 class="register-form-title">{{ t('sign_up') }}</h2>
         <a-form-item
-          label="Username"
+          :label="t('username')"
           name="username"
-          :rules="[{ required: true, message: 'Please input your username!' },
+          :rules="[{ required: true, message: t('please_input_your_username') },
                    { min: 4, message: 'Username length must large than 3' },
                    { max: 16, message: 'Username length must less than 16' },
                    { message: 'Username already exist', validator: checkUsernameExist }]"
         >
-          <a-input v-model:value="formState.username" placeholder="Username">
+          <a-input v-model:value="formState.username" :placeholder="t('username')">
             <template #prefix>
               <i class="iconfont">&#xe632;</i>
             </template>
@@ -125,15 +127,15 @@ function resendConfirm() {
         </a-form-item>
 
         <a-form-item
-          label="Email"
+          :label="t('email')"
           name="email"
-          :rules="[{ required: true, message: 'Please input your email!' },
+          :rules="[{ required: true, message: t('please_input_your_email') },
                    { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
                      message: 'Email address format not correct' }]"
         >
         <!-- ,
                    { message: 'Email already exist', validator: checkEmailExist } -->
-          <a-input v-model:value="formState.email" placeholder="Email">
+          <a-input v-model:value="formState.email" :placeholder="t('email')">
             <template #prefix>
               <i class="iconfont">&#xe66f;</i>
             </template>
@@ -141,14 +143,14 @@ function resendConfirm() {
         </a-form-item>
 
         <a-form-item
-          label="Password"
+          :label="t('password')"
           name="password"
-          :rules="[{ required: true, message: 'Please input your password!' },
+          :rules="[{ required: true, message: t('please_input_your_password') },
                    { min: 8, max: 32, message: 'Password should be range (8, 32)!' },
                    { pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,32}$/,
                      message: 'Both letters and numbers required'},]"
         >
-          <a-input-password v-model:value="formState.password" placeholder="Password">
+          <a-input-password v-model:value="formState.password" :placeholder="t('password')">
             <template #prefix>
               <i class="iconfont">&#xe66b;</i>
             </template>
@@ -157,11 +159,11 @@ function resendConfirm() {
 
         <a-form-item>
           <a-button :disabled="disabled" type="primary" html-type="submit" class="register-form-button">
-            Sign up
+            {{ t('sign_up') }}
           </a-button>
           <a-flex justify="space-between">
-            <a-typography-link href="#/login">Login now!</a-typography-link>
-            <a-typography-link type="link" @click="resendConfirm">Resend confirm email</a-typography-link>
+            <a-typography-link href="#/login">{{ t('login_now') }}</a-typography-link>
+            <a-typography-link type="link" @click="resendConfirm">{{ t('resend_confirm_email') }}</a-typography-link>
           </a-flex>
         </a-form-item>
       </a-form>

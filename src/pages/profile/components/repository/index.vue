@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { StarOutlined, LikeOutlined, MessageOutlined } from '@ant-design/icons-vue';
 import { onMounted, reactive, ref } from 'vue';
-import { ArticleService } from '../api/ArticleService';
+import { FileService } from '../../../../api/file.service';
 import { message } from 'ant-design-vue';
-import { ArticleDocument } from '../entities/article';
-import PaginationType from '../types/pagination';
+import { FileType } from '../../../../types/file';
+import PaginationType from '../../../../types/pagination';
 
 const props = defineProps({
   userId: {
@@ -13,26 +13,26 @@ const props = defineProps({
   }
 })
 
-const articleService = ArticleService.getInstance()
-const articleList = reactive<ArticleDocument[]>([])
+const fileService = FileService.getInstance()
+const fileList = reactive<FileType[]>([])
 
 const loading = ref<boolean>(true);
 const spinning = ref<boolean>(true)
-const pagination = reactive<PaginationType>({
+  const pagination = reactive<PaginationType>({
   current: 0,
-  size: 3,
+  size: 1,
   pages: 1,
   total: 0
 })
 
 function loadData(clear: boolean = true) {
   if (clear) {
-    articleList.splice(0, articleList.length)
+    fileList.splice(0, fileList.length)
   }
   spinning.value = true
-  articleService.findArticleInfoList({ createdBy: props.userId }, { current: pagination.current, size: pagination.size }).then(res => {
+  fileService.findFiles({ createdBy: props.userId }, { current: pagination.current, size: pagination.size }).then(res => {
     if (res.success && res.data) {
-      articleList.push(...(res.data.articles || []))
+      fileList.push(...(res.data.files || []))
       pagination.current = res.data.pagination.current
       pagination.total = res.data.pagination.total
       pagination.pages = res.data.pagination.pages
@@ -58,12 +58,11 @@ const onLoadMore = () => {
 
 <template>
   <a-spin :spinning="spinning">
-    <a-list item-layout="vertical" size="large" :data-source="articleList">
+    <a-list item-layout="vertical" size="large" :data-source="fileList">
       <template #loadMore>
-        <div v-if="!loading && articleList.length < pagination.total"
+        <div v-if="!loading && fileList.length < pagination.total"
           :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }">
-          <!-- <a-button @click="onLoadMore">loading more</a-button> -->
-          <a-button @click="onLoadMore">加载更多</a-button>
+          <a-button @click="onLoadMore">{{ $t('loading_more') }}</a-button>
         </div>
       </template>
 
@@ -71,16 +70,13 @@ const onLoadMore = () => {
         <a-list-item key="item.title">
         <template #extra v-if="!loading">
           <a-flex :gap="20">
-            <!-- <a-tag color="cyan" v-if="item.public">Public</a-tag> -->
-            <a-tag color="cyan" v-if="item.public">公开</a-tag>
-            <!-- <a-tag color="blue" v-else>Private</a-tag> -->
-            <a-tag color="blue" v-else>私有</a-tag>
-            <!-- <a key="list-loadmore-edit" :href="`#/publish?_id=${item._id}&type=Article`">edit</a> -->
-            <a key="list-loadmore-edit" :href="`#/publish?_id=${item._id}&type=Article`">修改</a>
+            <a-tag color="cyan" v-if="item.public">{{ $t('public') }}</a-tag>
+            <a-tag color="blue" v-else>{{ $t('private') }}</a-tag>
+            <a key="list-loadmore-edit" :href="`#/publish?_id=${item._id}&type=File`">{{ $t('edit') }}</a>
             <!-- <a key="list-loadmore-more">more</a> -->
           </a-flex>
         </template>
-          <template v-if="!loading" #actions>
+          <!-- <template v-if="!loading" #actions>
             <span>
               <component :is="StarOutlined" style="margin-right: 8px"></component>
               {{ item.statistics.collections }}
@@ -95,11 +91,11 @@ const onLoadMore = () => {
               <component :is="MessageOutlined" style="margin-right: 8px"></component>
               {{ item.statistics.comments }}
             </span>
-          </template>
+          </template> -->
           <a-skeleton :loading="loading" active avatar>
             <a-list-item-meta :description="item.description">
               <template #title>
-                <a :href="`#/article-detail?_id=${item._id}`">{{ item.title }}</a>
+                <a :href="`#/file-detail?_id=${item._id}`">{{ item.title }}</a>
               </template>
             </a-list-item-meta>
           </a-skeleton>
