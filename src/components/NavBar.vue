@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, computed, h, onUnmounted } from 'vue'
+import { ref, onMounted, watch, computed, h, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { MenuUnfoldOutlined } from '@ant-design/icons-vue'
+import { MenuUnfoldOutlined, GlobalOutlined, UserOutlined } from '@ant-design/icons-vue'
 import { MenuProps } from 'ant-design-vue'
-import { createI18n, useI18n } from 'vue-i18n'
+import { useI18n } from 'vue-i18n'
 
 
 // type NavBarType = {label: string, key: string, name: string, path: string, icon: ''}
 
-const { t } = useI18n()
+const i18n = useI18n()
+const { t, locale } = i18n
 const route = useRoute()
 const router = useRouter()
 let show_menu_collpase = ref<boolean>(window.innerWidth <= 400)
@@ -16,42 +17,45 @@ const current_path = ref<string[]>([])
 
 const navbar_list = ref<MenuProps['items']>([
   {
-    // label: 'Article',
-    // label: '文章',
     label: t('article'),
     key: 'Article',
-    // name: 'Article',
-    // path: '/article'
   },
   {
-    // label: 'Repository',
     label: t('repository'),
     key: 'Repository',
-    // name: 'Repository',
-    // path: '/repository'
   },
   {
-    // label: 'Publish',
-    // label: '发布',
     label: t('publish'),
     key: 'Publish',
-    // name: 'Publish',
-    // path: '/publish'
   },
   // {
-  //   label: 'ChatRoom',
     // label: t('chatroom'),
   //   key: 'ChatRoom',
   //   name: 'ChatRoom',
   //   path: '/chat-room'
   // },
   {
-    // label: 'Profile',
-    // label: '个人',
     label: t('profile'),
     key: 'Profile',
-    // name: 'Profile',
-    // path: '/profile'
+    children: [
+      {
+        label: t('profile'),
+        key: 'Profile',
+        icon: h(UserOutlined)
+      },
+      {
+        label: t('language'),
+        key: 'language',
+        icon: h(GlobalOutlined),
+        onClick: () => {
+          if (locale.value === 'en') {
+            locale.value = 'zh'
+          } else {
+            locale.value = 'en'
+          }
+        }
+      }
+    ]
   },
   // {
   //   label: '',
@@ -64,14 +68,16 @@ const navbar_list = ref<MenuProps['items']>([
 ])
 
 watch(current_path, (newVal) => {
-  router.push({
-    name: newVal[0]
-  })
+  if (newVal[0] != 'language') {
+    router.push({
+      name: newVal[0]
+    })
+  }
 })
 
 watch(() => route.name, (newVal) => {
   console.log(newVal)
-  if (newVal) {
+  if (newVal && newVal != 'language') {
     current_path.value.splice(0, 1, newVal.toString())
   }
 })

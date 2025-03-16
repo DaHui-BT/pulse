@@ -1,9 +1,10 @@
 import { createWebHashHistory, createRouter } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-import { JUMP_DELAY } from '../constant'
 
+import { JUMP_DELAY } from '../constant'
 import { message } from 'ant-design-vue'
 import { useAuthStore } from '../store'
+
 
 const routes: Readonly<RouteRecordRaw[]> = [
   {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, onBeforeUnmount, reactive, nextTick } from 'vue';
-import { getDateByDayCount, getDayByDayCount, getDayCountByLasteYear, getMonthByDayCount, getYearByDayCount } from '../utils/date';
+import { getDayByDayCount, getDayCountByLasteYear, getMonthByDayCount, getYearByDayCount } from '../utils/date';
 
 type Square = {
   x: number,
@@ -97,46 +97,83 @@ const offsetLeft = 30
 
 function generateSquareList(count: number) {
   const row = 7
-  const column = Math.ceil(count / row)
+  let currentIndex = currentDate.value.getDay()
   squareList.splice(0, squareList.length)
 
-  for (let i = 0; i < column; ++ i) {
-    for (let j = 0; j < row; ++ j) {
-      if (squareList.length >= count) return
-      const year = getYearByDayCount(i * row + j, currentDate.value)
-      const month = getMonthByDayCount(i * row + j, currentDate.value)
-      const day = getDayByDayCount(i * row + j, currentDate.value)
-      let value = 0
-      // TODO correct the start week
-      // if (i === 0 && j === 0) {
-      //   const d = getDateByDayCount(i * row + j, currentDate.value).getDay()
-      //   console.log(d)
-      // }
+  while (currentIndex < count + currentDate.value.getDay()) {
+    const c = Math.floor(currentIndex / row)
+    const r = currentIndex % row
+    
+    // if (squareList.length >= count) return
+    const year = getYearByDayCount(c * row + r, currentDate.value)
+    const month = getMonthByDayCount(c * row + r, currentDate.value)
+    const day = getDayByDayCount(c * row + r, currentDate.value)
+    let value = 0
 
-      for (let d of props.data) {
-        if (d.date.getTime() < new Date(year, month - 1, day + 1).getTime()
-             && d.date.getTime() > new Date(year, month - 1, day).getTime()) {
-          value = d.value
-          break
-        }
+    for (let d of props.data) {
+      if (d.date.getTime() < new Date(year, month - 1, day + 1).getTime()
+            && d.date.getTime() > new Date(year, month - 1, day).getTime()) {
+        value = d.value
+        break
       }
-
-      squareList.push({
-        x: i * squareWidth + i * gap + offsetLeft,
-        y: j * squareHeight + j * gap + offsetTop,
-        width: squareWidth,
-        height: squareHeight,
-        fillColor: '#eeea',
-        strokeColor: '#eee1',
-        hoverColor: '#aaa',
-        tooltipText: 'No contributions on',
-        contributes: value,
-        year: year,
-        month: month,
-        day: day
-      })
     }
+
+    squareList.push({
+      x: c * squareWidth + c * gap + offsetLeft,
+      y: r * squareHeight + r * gap + offsetTop,
+      width: squareWidth,
+      height: squareHeight,
+      fillColor: '#eeea',
+      strokeColor: '#eee1',
+      hoverColor: '#aaa',
+      tooltipText: 'No contributions on',
+      contributes: value,
+      year: year,
+      month: month,
+      day: day
+    })
+
+    currentIndex ++
   }
+
+  // for (let i = 0; i < column; ++ i) {
+  //   for (let j = 0; j < row; ++ j) {
+  //     if (squareList.length >= count) return
+  //     const year = getYearByDayCount(i * row + j, currentDate.value)
+  //     const month = getMonthByDayCount(i * row + j, currentDate.value)
+  //     const day = getDayByDayCount(i * row + j, currentDate.value)
+  //     let value = 0
+  //     // TODO correct the start week
+  //     if (i === 0 && j <= currentDate.value.getDay()) {
+  //       // const d = getDateByDayCount(i * row + j, currentDate.value).getDay()
+  //       // console.log(d)
+  //       continue
+  //     }
+
+  //     for (let d of props.data) {
+  //       if (d.date.getTime() < new Date(year, month - 1, day + 1).getTime()
+  //            && d.date.getTime() > new Date(year, month - 1, day).getTime()) {
+  //         value = d.value
+  //         break
+  //       }
+  //     }
+
+  //     squareList.push({
+  //       x: i * squareWidth + i * gap + offsetLeft,
+  //       y: j * squareHeight + j * gap + offsetTop,
+  //       width: squareWidth,
+  //       height: squareHeight,
+  //       fillColor: '#eeea',
+  //       strokeColor: '#eee1',
+  //       hoverColor: '#aaa',
+  //       tooltipText: 'No contributions on',
+  //       contributes: value,
+  //       year: year,
+  //       month: month,
+  //       day: day
+  //     })
+  //   }
+  // }
 }
 
 function drawSquare(ctx: CanvasRenderingContext2D, squareList: Square[]) {
@@ -294,7 +331,7 @@ onBeforeUnmount(() => {
       <canvas class="contribution-canvas" ref="canvas"></canvas>
     </div>
     <div class="color-table">
-      <!-- <p>Learn how we count contributions</p> -->
+      <p>Learn how we count contributions</p>
       <div class="color-table-container">
         less
         <span class="color-table-item" v-for="color in colorTable"

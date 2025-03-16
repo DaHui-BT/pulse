@@ -1,9 +1,12 @@
 {
+  "not_login_login_first": "还没有登录，请先登录",
+
   "article": "文章",
   "repository": "仓库",
   "publish": "发布",
   "chatroom": "聊天室",
   "profile": "个人",
+  "language": "语言",
 
   "overview": "总览",
   "watchers": "观看人数",
@@ -13,6 +16,7 @@
   "contributions_in_the_last_year": "贡献数量，过去一年",
 
   "sign_in": "登录",
+  "account": "账户",
   "username": "用户名",
   "please_input_your_username": "请输入你的用户名",
   "password": "密码",

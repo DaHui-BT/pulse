@@ -7,7 +7,13 @@ import NavBar from '@components/NavBar.vue'
   <div class="app">
     <nav-bar></nav-bar>
     <div :class="{'app-container': $route.meta.needContainer}">
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition name="slide-fade">
+          <div>
+            <component :is="Component" />
+          </div>
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>
@@ -25,5 +31,19 @@ import NavBar from '@components/NavBar.vue'
     background-color: var(--content-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);
   }
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
 }
 </style>

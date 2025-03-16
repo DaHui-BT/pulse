@@ -22,10 +22,11 @@ const router = useRouter()
 const store = useAuthStore()
 const user_service = UserService.getInstance()
 const article_service = ArticleService.getInstance()
-const article_info = ref<ArticleDocument>()
+const article_info = ref<ArticleDocument | null>(null)
 const user_info = ref<UserDocument>()
 const current_user = ref<UserDocument>(store.user)
 const tag_list = reactive<TagDocument[]>(store.tags)
+const tags = reactive<TagDocument[]>([])
 const preview = ref<{$el: HTMLDocument, html: string, scrollToTarget: Function}>()
 const tocs = reactive<TocType[]>([])
 let spinning = ref<boolean>(true)
@@ -49,9 +50,10 @@ const currentAnchor = ref<string>('')
 
 onBeforeMount(async () => {
   await article_service.findArticleById(route.query._id + '').then(res => {
-    if (res.success) {
-      article_info.value = res.data || undefined
+    if (res.success && res.data) {
+      article_info.value = res.data
       routes[2].breadcrumbName = article_info.value?.title || ''
+      tags.push(...(tag_list.filter(t => article_info.value?.tags.includes(t._id)) || []))
     }
     
     if (!res.success) {
@@ -172,7 +174,7 @@ const shareHandler = () => {
         </template>
 
         <template #tags>
-          <a-tag color="blue" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
+          <a-tag color="blue" v-for="tag in tags" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
       </a-page-header>
       
