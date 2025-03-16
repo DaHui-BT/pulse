@@ -10,6 +10,7 @@ import './style.css'
 import App from './App.vue'
 import { VMdEditor, VMdPreview } from './config/MarkdownConfig'
 import i18n from './config/i18n'
+import registerStoreEvent from './events/store.event'
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -23,6 +24,7 @@ app.use(pinia)
     .directive('draggable', Drag)
     .mount('#app')
 
+registerStoreEvent()
 
 // just for test
 import * as test from './services/tests/index'

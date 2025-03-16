@@ -50,13 +50,10 @@ export const useAuthStore = defineStore('auth', {
     getExpireTime(token: string): Date {
       let exp = null
       try {
-        console.log(token)
         let payload = token.split('.')[1]
-        console.log(payload)
         payload = atob(payload)
         exp = parseInt(JSON.parse(payload).exp) * 1000
       } catch (e) {
-        console.log(e)
         exp = new Date().getTime() + 100000
       }
       return new Date(exp)

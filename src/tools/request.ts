@@ -3,6 +3,8 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, Method,
                 AxiosHeaders } from 'axios'
 
 import { useAuthStore } from '../store'
+import EventBus from './eventbus'
+import Event from '../constant/event'
 
 type Interceptors = {
   request: AxiosInterceptorManager<InternalAxiosRequestConfig>
@@ -23,6 +25,7 @@ export class Request {
   interceptors: Interceptors
   store = useAuthStore()
   expireRequests: InternalAxiosRequestConfig[] = []
+  eventBus = new EventBus()
 
   constructor(config: AxiosRequestConfig = {}) {
     // Default values for timeout and baseURL
@@ -84,7 +87,7 @@ export class Request {
         // Centralized error handling (e.g., logging, alerting)
         if (response.data.code && response.data.code === 401) {
           // Handle token expiry or unauthorized errors globally
-          console.error('Unauthorized! Redirecting to login...')
+          this.eventBus.emit(Event.UNAUTHORIZED, response.data.message)
           // Optionally, you could log the user out or refresh the token here
         }
         // return Promise.reject(response)

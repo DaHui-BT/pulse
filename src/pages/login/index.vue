@@ -69,12 +69,12 @@ const disabled = computed(() => {
       >
         <h2 class="login-form-title">{{ t('sign_in') }}</h2>
         <a-form-item
-          :label="t('username')"
+          :label="t('account')"
           name="username"
           :rules="[{ required: true, message: t('please_input_your_username') }]">
           <!-- { pattern: /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/,
                      message: 'Email address format not correct' } -->
-          <a-input v-model:value="formState.username" :placeholder="t('username')">
+          <a-input v-model:value="formState.username" :placeholder="t('account')">
             <template #prefix>
               <i class="iconfont">&#xe66f;</i>
             </template>

@@ -79,6 +79,8 @@ const getTagName = (id: string) => {
 </script>
 
 <template>
+  <a-typography-title :level="2">{{ $t('repository') }}</a-typography-title>
+
   <a-form>
     <a-flex gap="10">
       <a-form-item>

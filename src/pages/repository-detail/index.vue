@@ -8,6 +8,7 @@ import { FileType } from '../../types/file';
 import { message } from 'ant-design-vue';
 import { UserType } from '../../types/user';
 import { useAuthStore } from '../../store';
+import { TagDocument } from '../../entities/tag';
 
 const route = useRoute()
 const router = useRouter()
@@ -16,7 +17,8 @@ const fileService = FileService.getInstance()
 const repository = ref<FileType>()
 const spinning = ref<boolean>(true)
 const user_info = ref<UserType>()
-const tag_list = ref(store.tags)
+const tag_list = reactive<TagDocument[]>(store.tags)
+const tags = reactive<TagDocument[]>([])
 const routes = reactive<{path: string, breadcrumbName: string}[]>([
   {
     path: '/',
@@ -41,7 +43,8 @@ onMounted(() => {
   fileService.findFileById(id).then(res => {
     console.log(res)
     if (res.success && res.data) {
-      repository.value = res.data 
+      repository.value = res.data
+      tags.push(...(tag_list.filter(t => repository.value?.tags.includes(t._id)) || []))
     } else {
       message.error(res.error)
     }
@@ -96,7 +99,7 @@ function cancel() {
         </template>
 
         <template #tags>
-          <a-tag color="blue" v-for="tag in tag_list" :key="tag._id">{{ tag.name }}</a-tag>
+          <a-tag color="blue" v-for="tag in tags" :key="tag._id">{{ tag.name }}</a-tag>
         </template>
       </a-page-header>
 
